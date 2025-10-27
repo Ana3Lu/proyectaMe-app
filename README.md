@@ -1,17 +1,21 @@
-# 🚨 Alerta360-App: Red Ciudadana Colaborativa (MVP)
+# 🧠 ReflexIA: Espacio Digital para la Gestión del Estrés y la Reflexión Personal
 
-> **Alerta360** es una aplicación móvil diseñada para crear una **red ciudadana en tiempo real**, permitiendo a los usuarios reportar incidentes urbanos (seguridad, infraestructura, clima) y recibir alertas relevantes según su ubicación.
+> **ReflexIA** es una aplicación móvil diseñada para promover la reflexión diaria, la autoconciencia y la gestión del estrés, mediante micro-retos y ejercicios breves de introspección guiada.
+
 
 ## 💡 Propuesta de Valor
 
-Nuestro diferencial es la **Integración de Inteligencia Artificial** para clasificar alertas automáticamente y **generar un "Resumen de Riesgo"** inmediato, transformando la data cruda en **información accionable** para la comunidad.
+Se plantea integrar IA conversacional (NLP) como acompañante reflexivo, no terapéutico, que ayuda a las personas a analizar sus pensamientos, reformularlos en positivo y registrar su progreso emocional.
+El enfoque es educativo, preventivo y de bienestar cotidiano, que no reemplaza procesos psicológicos ni ofrece diagnóstico clínico.
+
 
 ## 🚀 Estado del Proyecto (MVP de 1 Mes)
 
-Este proyecto se enfoca en el desarrollo de un **Producto Mínimo Viable (MVP)** funcional en un plazo estricto de **un mes**. El alcance se limita al flujo de reporte, clasificación de IA y visualización en el mapa.
+El MVP busca validar el flujo de uso básico: registro de hábitos, ejercicios breves de reflexión, acompañamiento por IA y visualización del progreso emocional.
+
 
 ## 📖 Documentación Completa
 
-Toda la documentación técnica, los requerimientos, el modelo arquitectónico y el análisis de riesgos se encuentra detallado en la **Wiki** de este repositorio.
+Toda la documentación técnica, los requerimientos, modelo de negocio y arquitectura están en la Wiki del repositorio.
 
-* [**Ir a la Wiki de Alerta360**](https://github.com/Ana3Lu/alerta360-app/wiki)
+* [**Ir a la Wiki de ReflexIA**](https://github.com/Ana3Lu/alerta360-app/wiki)
