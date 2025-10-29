@@ -2,31 +2,29 @@
 
 **SkillQuest** es una aplicación móvil interactiva que combina inteligencia artificial, gamificación y orientación vocacional para acompañar a jóvenes y adultos en el camino de explorar su potencial antes de elegir su futuro.
 
-Su asistente central, Robby, guía a cada usuario mediante conversaciones naturales, desafíos de autodescubrimiento, análisis de fortalezas y conexiones personalizadas con rutas de aprendizaje, comunidades y oportunidades reales.
+Su asistente central, Robby, guía a cada usuario mediante simulaciones temáticas, análisis de habilidades y conversaciones reflexivas que fortalecen el autoconocimiento y las competencias socioemocionales.
 > Descubre quién puedes ser, antes de decidir quién quieres ser.
 
 
 ## 💡 Propuesta de Valor
 
 **SkillQuest** ofrece un espacio digital seguro, dinámico y empático donde los usuarios pueden:
-- Explorar sus intereses, habilidades y motivaciones a través de preguntas y dinámicas guiadas por Robby.
-- Interactuar con Robby, una IA educativa que analiza las respuestas, sugiere áreas vocacionales, cursos o retos acordes al perfil del usuario.
-- Descubrir rutas personalizadas de aprendizaje y crecimiento, conectando con recursos externos o actividades sugeridas por la IA.
-- Completar misiones o micro-retos semanales para mejorar habilidades blandas (creatividad, comunicación, empatía, liderazgo).
-- Participar en una comunidad educativa, donde se pueden compartir logros, aprendizajes o experiencias, fomentando un entorno seguro y positivo.
-- Visualizar su evolución personal mediante un gráficos o un mapa de progreso vocacional con insignias, niveles y objetivos alcanzados.
-  
-El enfoque es **educativo, orientador y vivencial**, donde la aplicación no impone una carrera ni un camino, sino que ayuda a construirlo desde la autoconciencia y la curiosidad.
+- Explorar intereses, habilidades y motivaciones mediante simulaciones guiadas por Robby.
+- Vivir experiencias vocacionales interactivas (“Misiones”) que representan retos del mundo real.
+- Recibir retroalimentación personalizada con análisis de habilidades y recomendaciones de crecimiento.
+- Visualizar su evolución en un diagrama o mapa de progreso dinámico con insignias, niveles y logros.
+- Conectarse con la comunidad para compartir logros, aprendizajes y reflexiones.
+- Conversar con Robby en modo orientación o reflexión, limitado en la versión gratuita.
 
 
-## 🚀 Estado del Proyecto (MVP - 1 Mes)
+## 🚀 Estado del Proyecto (MVP)
 
 El MVP busca validar: 
-- El flujo de descubrimiento vocacional guiado por Robby (interacción conversacional con sugerencias).
-- El registro de intereses, habilidades y metas personales con retroalimentación inmediata.
-- El sistema de logros y rutas de progreso gamificadas.
-- La interacción con la comunidad educativa segura y moderada.
-- La satisfacción de los usuarios con Robby como guía IA personalizada.
+- El flujo de descubrimiento vocacional guiado por IA.
+- El registro y visualización de habilidades y progresos.
+- Las misiones base gratuitas (3 escenarios temáticos iniciales).
+- La satisfacción con Robby como guía empática y reflexiva.
+- La interacción básica con la comunidad educativa interna.
 
 
 ## 📖 Documentación Completa
