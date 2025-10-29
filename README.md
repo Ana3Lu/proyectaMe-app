@@ -1,33 +1,36 @@
-# 🧠 ReflexIA: Espacio Digital para la Gestión del Estrés y la Reflexión Personal
+# 🚀 SkillQuest – Vive, Aprende y Conecta con tu Futuro
 
-> **ReflexIA** es una aplicación móvil que combina introspección guiada por IA con micro-interacciones comunitarias y contenido sensorial (música, color y palabra) para acompañar a las personas en la gestión del estrés, la autoconciencia y el bienestar emocional diario.
+**SkillQuest** es una aplicación móvil interactiva que combina inteligencia artificial, gamificación y orientación vocacional para acompañar a jóvenes y adultos en el camino de explorar su potencial antes de elegir su futuro.
+
+Su asistente central, Robby, guía a cada usuario mediante conversaciones naturales, desafíos de autodescubrimiento, análisis de fortalezas y conexiones personalizadas con rutas de aprendizaje, comunidades y oportunidades reales.
+> Descubre quién puedes ser, antes de decidir quién quieres ser.
 
 
 ## 💡 Propuesta de Valor
 
-ReflexIA ofrece un espacio digital anónimo y empático donde las personas pueden:
-- Registrar pensamientos y emociones de manera privada o anónima.
-- Interactuar con una IA conversacional reflexiva (NLP) que reformula ideas en positivo, ayudando a identificar emociones y patrones.
-- Descubrir micro-retos diarios para pausar, respirar y reconectar.
-- Explorar música sugerida automáticamente según su estado emocional (vía Spotify API).
-- Visualizar su evolución emocional a través de gráficos, badges y patrones de progreso.
-- Participar en una comunidad ligera y anónima, donde compartir frases, reflexiones o comentarios seguros.
+**SkillQuest** ofrece un espacio digital seguro, dinámico y empático donde los usuarios pueden:
+- Explorar sus intereses, habilidades y motivaciones a través de preguntas y dinámicas guiadas por Robby.
+- Interactuar con Robby, una IA educativa que analiza las respuestas, sugiere áreas vocacionales, cursos o retos acordes al perfil del usuario.
+- Descubrir rutas personalizadas de aprendizaje y crecimiento, conectando con recursos externos o actividades sugeridas por la IA.
+- Completar misiones o micro-retos semanales para mejorar habilidades blandas (creatividad, comunicación, empatía, liderazgo).
+- Participar en una comunidad educativa, donde se pueden compartir logros, aprendizajes o experiencias, fomentando un entorno seguro y positivo.
+- Visualizar su evolución personal mediante un gráficos o un mapa de progreso vocacional con insignias, niveles y objetivos alcanzados.
   
-El enfoque es **educativo, preventivo y de bienestar cotidiano**, que no reemplaza procesos psicológicos ni ofrece diagnóstico clínico.
+El enfoque es **educativo, orientador y vivencial**, donde la aplicación no impone una carrera ni un camino, sino que ayuda a construirlo desde la autoconciencia y la curiosidad.
 
 
 ## 🚀 Estado del Proyecto (MVP - 1 Mes)
 
 El MVP busca validar: 
-- El flujo completo de registro emocional junto con análisis IA y música sugerida.
-- El sistema de alias anónimos y avatares coloridos personalizables.
-- El impacto de micro-retos y contenido educativo en la retención.
-- La reacción de los usuarios ante un espacio empático y sin exposición social.
-- La visualización del progreso emocional como elemento motivador.
+- El flujo de descubrimiento vocacional guiado por Robby (interacción conversacional con sugerencias).
+- El registro de intereses, habilidades y metas personales con retroalimentación inmediata.
+- El sistema de logros y rutas de progreso gamificadas.
+- La interacción con la comunidad educativa segura y moderada.
+- La satisfacción de los usuarios con Robby como guía IA personalizada.
 
 
 ## 📖 Documentación Completa
 
 Toda la documentación técnica, los requerimientos, el modelo de negocio y la arquitectura están disponibles en la Wiki del repositorio.
 
-* [**Ir a la Wiki de ReflexIA**](https://github.com/Ana3Lu/reflexIA-app/wiki)
+* [**Ir a la Wiki de SkillQuest**](https://github.com/Ana3Lu/skillQuest-app/wiki)
