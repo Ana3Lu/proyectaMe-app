@@ -1,31 +1,30 @@
 # 🚀 ProyectaMe – Explora tu Futuro, Hoy
 
-**ProyectaMe** es una aplicación móvil interactiva que combina inteligencia artificial, simulación inmersiva y orientación vocacional gamificada para que jóvenes y adultos puedan probar diferentes profesiones, oficios o roles laborales antes de tomar decisiones sobre su futuro académico o profesional.
+**ProyectaMe** es una aplicación móvil interactiva que combina inteligencia artificial, simulaciones inmersivas y orientación vocacional gamificada para que jóvenes y adultos puedan probar diferentes profesiones, oficios o roles laborales antes de tomar decisiones sobre su futuro académico o profesional.
 
-Su asistente central, Robby, te acompaña en experiencias interactivas (“Simulaciones”), analiza tus respuestas y te devuelve retroalimentación personalizada que te ayuda a descubrir tus intereses, fortalezas y posibles caminos de desarrollo.
+Su asistente central, Robby, guía al usuario a través de experiencias interactivas (Simulaciones) que imitan situaciones reales del mundo laboral, ofreciendo retroalimentación personalizada y un mapa visual de afinidades vocacionales.
 
 > Descubre quién puedes ser, antes de decidir quién quieres ser.
 
 
 ## 💡 Propuesta de Valor
 
-ProyectaMe crea un entorno digital empático, educativo y dinámico donde el usuario puede:
+ProyectaMe crea un entorno digital empático y educativo donde los usuarios pueden:
 - Vivir simulaciones interactivas que lo ponen en el rol de diferentes profesiones u oficios.
-- Explorar vocaciones reales mediante decisiones prácticas, dilemas y micro-retos que representan desafíos del día a día en esas áreas.
-- Recibir retroalimentación personalizada de Robby con análisis de perfil vocacional, intereses dominantes y sugerencias de caminos.
-- Visualizar su evolución a través de un mapa dinámico con niveles y rutas según ámbitos o sectores.
-- Conectarse con una comunidad educativa, compartiendo logros, reflexiones y aprendizajes.
+- Explorar vocaciones a través de decisiones prácticas y dilemas laborales breves.
+- Recibir retroalimentación personalizada de Robby, con análisis de intereses, fortalezas y posibles áreas de desarrollo.
+- Visualizar su evolución en un mapa dinámico con niveles, insignias y progresión por ámbitos vocacionales.
+- Conectarse con una comunidad educativa, donde pueden compartir logros, aprendizajes y reflexiones.
 - Conversar con Robby en modo orientación o reflexión (limitado en versión gratuita).
-
 
 ## 🚀 Estado del Proyecto (MVP – 1 Mes)
 
 El MVP busca validar: 
-- El flujo de simulaciones vocacionales con IA.
-- El registro de afinidades y progreso.
-- 3 simulaciones temáticas iniciales.
-- Satisfacción con Robby como guía empática.
-- Participación en comunidad interna.
+- El flujo de simulaciones vocacionales con Robby.
+- El registro y visualización de afinidades vocacionales.
+- Tres simulaciones temáticas iniciales.
+- La satisfacción del usuario con Robby como guía.
+- La participación básica en la comunidad.
 
 
 ## 📖 Documentación Completa
