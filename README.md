@@ -13,7 +13,7 @@ ProyectaMe crea un entorno digital empático y educativo donde los usuarios pued
 - **Vivir simulaciones interactivas** que los ponen en el rol de diferentes profesiones u oficios.
 - **Explorar vocaciones** mediante decisiones prácticas y dilemas laborales breves.
 - **Recibir retroalimentación** personalizada de Robby, con análisis de intereses, fortalezas y áreas de desarrollo.
-- **Visualizar su evolución** en un mapa dinámico de afinidades vocacionales con niveles y badges.
+- **Visualizar su evolución** en un mapa dinámico de afinidades vocacionales con niveles.
 - **Conectarse con una comunidad educativa**, donde pueden compartir logros, reflexiones y participar en retos.
 - **Conversar con Robby** en modo orientación o reflexión (limitado en la versión gratuita).
 
