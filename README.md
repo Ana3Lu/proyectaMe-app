@@ -13,15 +13,15 @@ ProyectaMe crea un entorno digital empático y educativo donde los usuarios pued
 - Vivir simulaciones interactivas que lo ponen en el rol de diferentes profesiones u oficios.
 - Explorar vocaciones a través de decisiones prácticas y dilemas laborales breves.
 - Recibir retroalimentación personalizada de Robby, con análisis de intereses, fortalezas y posibles áreas de desarrollo.
-- Visualizar su evolución en un mapa dinámico con niveles, insignias y progresión por ámbitos vocacionales.
+- Visualizar su evolución en un mapa dinámico de afinidades vocacionales con niveles y badges.
 - Conectarse con una comunidad educativa, donde pueden compartir logros, aprendizajes y reflexiones.
 - Conversar con Robby en modo orientación o reflexión (limitado en versión gratuita).
 
 ## 🚀 Estado del Proyecto (MVP – 1 Mes)
 
 El MVP busca validar: 
-- El flujo de simulaciones vocacionales con Robby.
-- El registro y visualización de afinidades vocacionales.
+- El flujo de simulaciones vocacionales con acompañamiento de Robby.
+- El registro y visualización de afinidades vocacionales y progreso.
 - Tres simulaciones temáticas iniciales.
 - La satisfacción del usuario con Robby como guía.
 - La participación básica en la comunidad.
