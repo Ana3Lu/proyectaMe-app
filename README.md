@@ -6,7 +6,7 @@ Su asistente central, **Robby**, guía al usuario a través de experiencias inte
 
 > Descubre quién puedes ser, antes de decidir quién quieres ser.
 
-
+---
 ## 💡 Propuesta de Valor
 
 ProyectaMe crea un entorno digital empático y educativo donde los usuarios pueden:
@@ -17,6 +17,7 @@ ProyectaMe crea un entorno digital empático y educativo donde los usuarios pued
 - **Conectarse con una comunidad educativa**, donde pueden compartir logros, reflexiones y participar en retos.
 - **Conversar con Robby** en modo orientación o reflexión (limitado en la versión gratuita).
 
+---
 ## 🚀 Estado del Proyecto (MVP – 1 Mes)
 
 El MVP busca validar: 
@@ -26,7 +27,14 @@ El MVP busca validar:
 - La satisfacción del usuario con Robby como guía.
 - La participación activa en comunidad (publicaciones, reacciones y retos semanales).
 
+---
+## 🎨 Vista del Diseño (Figma Prototype)
 
+Puedes explorar distintas pantallas que integran la interfaz visual completa del MVP en Figma:
+
+* [**Ver Prototipo en Figma**](https://www.figma.com/design/PVcTicuhInWJKXwdusKZqD/ProyectaMe?node-id=0-1&t=CK7waitYMHwM23I9-1)
+
+---
 ## 📖 Documentación Completa
 
 Toda la documentación técnica, los requerimientos, el modelo de negocio y la arquitectura están disponibles en la Wiki del repositorio.
