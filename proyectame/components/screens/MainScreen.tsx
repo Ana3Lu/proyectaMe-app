@@ -5,20 +5,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
-interface SimulationQuestion {
-  question: string;
-  options: string[];
-  feedback: string[];
-}
-
-interface GeminiResponse {
-  candidates?: {
-    content?: {
-      parts?: { text?: string }[];
-    };
-  }[];
-}
+import { SimulationQuestion } from '@/types/simulation.type';
+import { GeminiResponse } from '@/types/responses.type';
+import { ChatBubble } from '@/components/ui/ChatBubble';
+import { OptionButton } from '@/components/ui/OptionButton';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export default function MainScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
@@ -131,69 +122,65 @@ export default function MainScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={80}
-    >
-      <LinearGradient
-        colors={['#7794F5', '#2F32CD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.topBar}
-      >
-        <TouchableOpacity style={styles.closeButton}>
-          <Ionicons name="close" size={28} color="white" />
-        </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text style={styles.topBarText}>
-            Decisión {questions.length > 0 ? currentIndex + 1 : 0} de {questions.length}
-          </Text>
-        </View>
-      </LinearGradient>
-
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2F32CD" />
-            <Text>Cargando simulación...</Text>
-          </View>
-        ) : (
-          chatHistory.map((chat, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.chatBubble,
-                chat.sender === "user" ? styles.userBubble : styles.robbyBubble
-              ]}
-            >
-              <Text style={{ color: chat.sender === "user" ? "black" : "white" }}>
-                {chat.message}
-              </Text>
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={80}
+        >
+          <LinearGradient
+            colors={['#7794F5', '#2F32CD']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.topBar}
+          >
+            <TouchableOpacity style={styles.closeButton}>
+              <Ionicons name="close" size={28} color="white" />
+            </TouchableOpacity>
+    
+            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+              <Text style={styles.topBarText}>
+      Decisión {questions.length > 0 ? currentIndex + 1 : 0} de {questions.length}
+    </Text>
+    
             </View>
-          ))
-        )}
-
-        {!isLoading && questions[currentIndex] && selectedAnswers[currentIndex] === undefined && (
-          <View style={{ marginTop: 16 }}>
-            {questions[currentIndex].options.map((opt, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.optionButton}
-                onPress={() => handleOptionSelect(idx)}
-              >
-                <Text style={styles.optionText}>{opt}</Text>
+    
+            <ProgressBar value={((currentIndex + 1) / questions.length) * 100} />
+          </LinearGradient>
+    
+          <ScrollView 
+            contentContainerStyle={styles.contentContainer} 
+            showsVerticalScrollIndicator={false}
+          >
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Cargando simulación...</Text>
+              </View>
+            ) : (
+              chatHistory.map((chat, idx) => (
+                <ChatBubble key={idx} message={chat.message} sender={chat.sender} />
+              ))
+            )}
+    
+            {!isLoading && questions[currentIndex] && selectedAnswers[currentIndex] === undefined && (
+              <View style={{ marginTop: 16 }}>
+                {questions[currentIndex].options.map((opt, idx) => (
+                  <OptionButton
+                    key={idx}
+                    option={opt}
+                    selected={false}
+                    onPress={() => handleOptionSelect(idx)}
+                  />
+                ))}
+              </View>
+            )}
+    
+            {!isLoading && selectedAnswers[currentIndex] !== undefined && (
+              <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
+                <Text style={styles.nextButtonText}>Siguiente</Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {!isLoading && selectedAnswers[currentIndex] !== undefined && currentIndex < questions.length && (
-          <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
-            <Text style={styles.nextButtonText}>Siguiente</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
   );
 }
 
@@ -202,47 +189,24 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   closeButton: {
-    backgroundColor: "#2F32CD",
+    backgroundColor: '#2F32CD',
     borderRadius: 15,
     padding: 4,
-    marginTop: 10,
+    marginTop: 10, 
   },
-  topBarText: { color: "white", fontWeight: "600", fontSize: 16 },
+  topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
   contentContainer: { padding: 16, paddingBottom: 100 },
-  loadingContainer: { justifyContent: "center", alignItems: "center", marginTop: 50 },
-  chatBubble: {
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 16,
-    maxWidth: "90%",
-  },
-  userBubble: {
-    backgroundColor: "#E3E3E3",
-    alignSelf: "flex-end",
-  },
-  robbyBubble: {
-    backgroundColor: "#2F32CD",
-    alignSelf: "flex-start",
-  },
-  optionButton: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#2F32CD",
-    padding: 10,
-    marginVertical: 5,
-  },
-  optionText: { color: "#2F32CD", fontWeight: "500", textAlign: "center" },
+  loadingContainer: { justifyContent: 'center', alignItems: 'center', marginTop: 50 },
   nextButton: {
-    marginTop: 20,
-    backgroundColor: "#2F32CD",
+    marginTop: 16,
+    backgroundColor: '#2F32CD',
     paddingVertical: 12,
     borderRadius: 24,
-    alignItems: "center",
+    alignItems: 'center',
   },
-  nextButtonText: { color: "white", fontWeight: "600", fontSize: 16 },
+  nextButtonText: { color: 'white', fontWeight: '600', fontSize: 16 },
 });
