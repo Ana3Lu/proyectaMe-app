@@ -1,28 +1,27 @@
 import { GeminiResponse } from '../types/responses.type';
 import { SimulationQuestion } from '../types/simulation.type';
 
-export const fetchSimulation = async (): Promise<SimulationQuestion[]> => {
+export const fetchSimulation = async () => {
   const body = {
   "contents": [
     {
       "parts": [
         {
-          "text": `Genera 6 preguntas (decisiones secuenciales) de simulación vocacional con esta estructura estricta en JSON, donde siempre siga
-          el siguiente formato con las posibles respuestas para el usuario:
-              [
-                  {
-                      "question": "texto de la pregunta",
-                      "options": ["opción 1", "opción 2", "opción 3", "opción 4"], 
-                      "feedback": ["retroalimentación 1", "retroalimentación 2", "retroalimentación 3", "retroalimentación 4"]
-                  }
-              ], esto para tener una simulación narrativa interactiva para mi app vocacional ProyectaME que sirve para que 
-            los usuarios puedan sentir por medio de una simulación los tipos de dilemas o situaciones que podrían ocurrir
-            en distintos oficios o profesiones. Como si fuera un cuestionario pero
-              todo se presenta como historia por medio de chats donde el usuario va haciendo la simulación junto con 
-              robby, un asistente virtual de la app que serás tú (aunque tú no lo mencionas, empiezas de una vez explicando
-              el escenario de la simulación de ese momento) y que va chateando con el usuario presentando el contexto de la situación de la simulación 
-              y demás, y luego le pregunta qué haría el usuario, donde él responde y presentas una retroalimentación 
-              de su decisión en la situación y continuas narrando hasta acabar la simulación.`
+          "text": `Genera una simulación narrativa interactiva para mi app vocacional ProyectaME que sirve para que 
+              los usuarios puedan sentir por medio de una simulacion los tipos de dilemas o situaciones que podrían ocurrir
+              en distintos oficios o profesiones.
+                La simulación debe tener 6 decisiones secuenciales (es como si fuera un cuestionario pero
+                todo se presenta como historia por medio de chats donde el usuario va haciendo la simulación junto con 
+                robby, un asistente virtual de la app que serás tú y que va chateando con el usuario presentando el 
+                contexto de la situación de la simulación y demás, y luego le pregunta qué haría el usuario, donde el responde y 
+                presentas una retroalimentación de su decisión en la situación y continuas narrando hasta acabar la simulación), 
+                cada decisión con:
+                - question: escenario o situación a resolver
+                - options: mínimo 4 opciones de respuesta
+                - feedback: retroalimentación para cada opción
+
+                Ejemplo de simulaciones: Día como médico, Estudio de diseño, Desarrollador de apps.
+                Devuelve un array JSON de objetos siguiendo esta estructura.`
         }
       ]
     }
@@ -63,6 +62,7 @@ export const fetchSimulation = async (): Promise<SimulationQuestion[]> => {
       }
     );
 
+    console.log("Fetch Gemini response status:", response.status, response.statusText);
     const data: GeminiResponse = await response.json();
     console.log("Raw data from Gemini:", JSON.stringify(data, null, 2));
 
