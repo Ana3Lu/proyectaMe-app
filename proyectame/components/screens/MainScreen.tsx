@@ -4,7 +4,7 @@ import { SimulationQuestion } from '../../types/simulation.type';
 import { ChatBubble } from '../ui/ChatBubble';
 import { OptionButton } from '../ui/OptionButton';
 import { ProgressBar } from '../ui/ProgressBar';
-import { fetchSimulationFromGemini } from '../../services/gemini.service';
+import { fetchNextSimulationStep } from '../../services/gemini.service';
 
 interface UserScore {
   [key: string]: number;
@@ -18,24 +18,39 @@ export default function MainScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadSimulation();
+    loadNextStep(); // Cargar primer paso
   }, []);
 
-  const loadSimulation = async () => {
+  const loadNextStep = async () => {
     setIsLoading(true);
-    const data = await fetchSimulationFromGemini();
-    setQuestions(data);
-    setIsLoading(false);
+    try {
+      const nextStep = await fetchNextSimulationStep(questions);
+      console.log('Paso de Gemini cargado:', nextStep);
+      setQuestions([...questions, nextStep]);
+    } catch (err) {
+      console.warn('Fallo al cargar paso de Gemini, puedes usar fallback local');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOptionSelect = (optionIndex: number) => {
+    if (selectedAnswers[currentQuestionIndex] !== undefined) return;
+
     setSelectedAnswers({ ...selectedAnswers, [currentQuestionIndex]: optionIndex });
-    const key = `strength-${currentQuestionIndex}-${optionIndex}`;
-    setUserScore({ ...userScore, [key]: (userScore[key] || 0) + 1 });
+
+    const skillKey = questions[currentQuestionIndex].strengths?.[optionIndex];
+    if (skillKey) {
+      setUserScore({ ...userScore, [skillKey]: (userScore[skillKey] || 0) + 1 });
+    }
   };
 
-  const goToNext = () => {
+  const goToNext = async () => {
     if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (questions.length < 6) {
+      // Generar siguiente paso solo si no hemos completado los 6
+      await loadNextStep();
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       console.log('Simulación terminada. Puntuación:', userScore);
@@ -69,13 +84,15 @@ export default function MainScreen() {
               sender="robby"
             />
           )}
-          <ProgressBar value={((currentQuestionIndex + 1) / questions.length) * 100} />
-          <Text
-            style={{ marginTop: 12, fontWeight: 'bold', color: '#0288d1', textAlign: 'center' }}
-            onPress={goToNext}
-          >
-            Siguiente
-          </Text>
+          <ProgressBar value={((currentQuestionIndex + 1) / 6) * 100} />
+          {selectedAnswers[currentQuestionIndex] !== undefined && (
+            <Text
+              style={{ marginTop: 12, fontWeight: 'bold', color: '#0288d1', textAlign: 'center' }}
+              onPress={goToNext}
+            >
+              Siguiente
+            </Text>
+          )}
         </View>
       ) : (
         <Text>No se pudieron cargar las simulaciones.</Text>
