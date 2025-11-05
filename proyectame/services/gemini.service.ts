@@ -1,88 +1,84 @@
 import { GeminiResponse } from '../types/responses.type';
 import { SimulationQuestion } from '../types/simulation.type';
 
-export const fetchSimulation = async () => {
+export const fetchSimulation = async (): Promise<SimulationQuestion[]> => {
   const body = {
-  "contents": [
-    {
-      "parts": [
-        {
-          "text": `Genera una array de objetos que es una simulación narrativa de solo 6 decisiones tipo cuestionario (tamaño de array), interactiva para mi app vocacional ProyectaME que sirve para que 
-              los usuarios puedan sentir por medio de una simulacion los tipos de dilemas o situaciones que podrían ocurrir
-              en distintos oficios o profesiones.
-                La simulación debe tener 6 decisiones secuenciales (es como si fuera un cuestionario pero
-                todo se presenta como historia por medio de chats donde el usuario va haciendo la simulación junto con 
-                robby, un asistente virtual de la app que serás tú (pero no te menciones... inicia con la simulación de una vez) y que va chateando con el usuario presentando el 
-                contexto de la situación de la simulación y demás, y luego le pregunta qué haría el usuario, donde el responde y 
-                presentas una retroalimentación de su decisión en la situación y continuas narrando hasta acabar la simulación), 
-                cada decisión (que es un objeto de la simulación dentro de un array) debe tener la siguiente estructura con:
-                - question: escenario o situación a resolver (string)
-                - options: mínimo 4 opciones de respuesta posibles (array de strings)
-                - feedback: retroalimentación para cada opción (equivalente a la cantidad de opciones, array de strings)
-
-                Ejemplo de simulaciones: Día como médico, Estudio de diseño, Desarrollador de apps.
-                Devuelve un array JSON de objetos siguiendo esta estructura... Asi simple y claro, sin nada adicional, y el feedback debe ser concreto y breve (1-2 frases máximo).`
-        }
-      ]
-    }
-  ],
-  "generationConfig": {
-    "responseMimeType": "application/json",
-    "responseSchema": {
-      "type": "ARRAY",
-      "items": {
-        "type": "OBJECT",
-        "properties": {
-          "question": { "type": "STRING" },
-          "options": { "type": "ARRAY", "items": { "type": "STRING" } },
-          "feedback": { "type": "ARRAY", "items": { "type": "STRING" } }
+    contents: [
+      {
+        parts: [
+          {
+            text: "Retorna directamente una lista JSON con exactamente 6 decisiones secuenciales para una simulación narrativa tipo chat vocacional. Cada decisión representa un dilema o situación profesional donde el usuario debe elegir qué haría. La narrativa debe estar incluida dentro del campo 'question' (como si Robby presentara la situación, pero sin mencionarlo explícitamente). Cada decisión debe incluir: 4 opciones posibles ('options') y retroalimentación específica para cada opción ('feedback'). No incluyas texto introductorio, comentarios ni código Markdown — solo el array JSON. Ejemplos de simulaciones: 'Un día como médico', 'Estudio de diseño', 'Desarrollador de apps'."
+          }
+        ]
+      }
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            question: { type: "STRING" },
+            options: { type: "ARRAY", items: { type: "STRING" } },
+            feedback: { type: "ARRAY", items: { type: "STRING" } }
+          }
         }
       }
     }
-  }
-};
-
-
-
-
+  };
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'x-goog-api-key': process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '',
-          'Content-Type': 'application/json',
+          "x-goog-api-key": process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? "",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
       }
     );
 
     const data: GeminiResponse = await response.json();
+    console.log("Raw data from Gemini:", JSON.stringify(data, null, 2));
+
+    // 🧩 Obtener texto del modelo
     const textData = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!textData) return [];
-
-    try {
-      const parsedData: SimulationQuestion[] = JSON.parse(textData);
-      if (Array.isArray(parsedData)) {
-        // Aseguramos opciones y feedback por seguridad
-        parsedData.forEach(q => {
-          if (!q.options || q.options.length !== 4) q.options = ['Opción 1','Opción 2','Opción 3','Opción 4'];
-          if (!q.feedback || q.feedback.length !== 4) q.feedback = q.options.map(() => 'Retroalimentación pendiente');
-        });
-        return parsedData;
-      } else {
-        console.warn('Respuesta de Gemini no es un array:', textData);
-        return [];
-      }
-    } catch (err) {
-      console.warn('Error parseando respuesta de Gemini:', textData, err);
+    if (!textData) {
+      console.warn("⚠️ No se recibió texto desde Gemini");
       return [];
     }
+
+    // 🧹 Limpiar posibles bloques de Markdown o basura
+    const cleanText = textData
+      .replace(/```json/i, '')
+      .replace(/```/g, '')
+      .replace(/^[^{[]+/, '') // elimina texto antes del JSON
+      .replace(/[^}\]]+$/, '') // elimina texto después del JSON
+      .trim();
+
+    console.log("🧾 Cleaned Gemini JSON:", cleanText);
+
+    const parsedData: SimulationQuestion[] = JSON.parse(cleanText);
+
+    if (Array.isArray(parsedData)) {
+      // Validación mínima de estructura
+      parsedData.forEach(q => {
+        if (!q.options || q.options.length < 4)
+          q.options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
+        if (!q.feedback || q.feedback.length < 4)
+          q.feedback = q.options.map(() => "Retroalimentación pendiente");
+      });
+      return parsedData;
+    } else {
+      console.warn("⚠️ La respuesta no es un array válido:", cleanText);
+      return [];
+    }
+
   } catch (err) {
-    console.error('Error fetching Gemini simulation:', err);
+    console.error("💥 Error al llamar a Gemini:", err);
     return [];
   }
 };
