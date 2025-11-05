@@ -1,34 +1,36 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { 
+  ActivityIndicator, ScrollView, Text, View, StyleSheet, 
+  TouchableOpacity, KeyboardAvoidingView, Platform 
+} from 'react-native';
 import { SimulationQuestion } from '../../types/simulation.type';
 import { ChatBubble } from '../ui/ChatBubble';
 import { OptionButton } from '../ui/OptionButton';
 import { ProgressBar } from '../ui/ProgressBar';
-import { fetchNextSimulationStep } from '../../services/gemini.service';
+import { fetchSimulation } from '../../services/gemini.service';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-interface UserScore {
-  [key: string]: number;
-}
+interface UserScore { [key: string]: number }
 
 export default function MainScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [userScore, setUserScore] = useState<UserScore>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [chatHistory, setChatHistory] = useState<{ message: string; sender: 'robby' | 'user' }[]>([]);
 
-  useEffect(() => {
-    loadNextStep(); // Cargar primer paso
-  }, []);
+  useEffect(() => { loadSimulation(); }, []);
 
-  const loadNextStep = async () => {
+  const loadSimulation = async () => {
     setIsLoading(true);
     try {
-      const nextStep = await fetchNextSimulationStep(questions);
-      console.log('Paso de Gemini cargado:', nextStep);
-      setQuestions([...questions, nextStep]);
+      const simulation = await fetchSimulation();
+      setQuestions(simulation);
+      setChatHistory([{ message: simulation[0].question, sender: 'robby' }]);
     } catch (err) {
-      console.warn('Fallo al cargar paso de Gemini, puedes usar fallback local');
+      console.warn('Fallo al cargar simulación:', err);
     } finally {
       setIsLoading(false);
     }
@@ -37,66 +39,119 @@ export default function MainScreen() {
   const handleOptionSelect = (optionIndex: number) => {
     if (selectedAnswers[currentQuestionIndex] !== undefined) return;
 
+    const currentQuestion = questions[currentQuestionIndex];
     setSelectedAnswers({ ...selectedAnswers, [currentQuestionIndex]: optionIndex });
 
-    const skillKey = questions[currentQuestionIndex].strengths?.[optionIndex];
-    if (skillKey) {
-      setUserScore({ ...userScore, [skillKey]: (userScore[skillKey] || 0) + 1 });
-    }
+    // Actualizamos score
+    const skillKey = currentQuestion.strengths?.[optionIndex];
+    if (skillKey) setUserScore({ ...userScore, [skillKey]: (userScore[skillKey] || 0) + 1 });
+
+    // Mensaje del usuario
+    setChatHistory(prev => [...prev, { message: currentQuestion.options[optionIndex], sender: 'user' }]);
+    
+    // Mensaje de Robby con retroalimentación
+    setTimeout(() => {
+      setChatHistory(prev => [...prev, { message: currentQuestion.feedback[optionIndex], sender: 'robby' }]);
+    }, 600);
   };
 
-  const goToNext = async () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (questions.length < 6) {
-      // Generar siguiente paso solo si no hemos completado los 6
-      await loadNextStep();
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const goToNext = () => {
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex < questions.length) {
+      setCurrentQuestionIndex(nextIndex);
+      setChatHistory(prev => [...prev, { message: questions[nextIndex].question, sender: 'robby' }]);
     } else {
-      console.log('Simulación terminada. Puntuación:', userScore);
       alert('¡Simulación finalizada! Revisa tu perfil para sugerencias de carrera.');
     }
   };
 
-  const currentQuestion = questions[currentQuestionIndex];
-
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ alignItems: 'center' }}>
-      {isLoading ? (
-        <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text>Cargando simulación...</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
+      {/* TopBar */}
+      <LinearGradient
+        colors={['#7794F5', '#2F32CD']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.topBar}
+      >
+        <TouchableOpacity style={styles.closeButton}>
+          <Ionicons name="close" size={28} color="white" />
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+          <Text style={styles.topBarText}>Decisión {currentQuestionIndex + 1} de 6</Text>
         </View>
-      ) : currentQuestion ? (
-        <View style={{ width: '100%' }}>
-          <ChatBubble message={currentQuestion.question} sender="robby" />
-          {currentQuestion.options.map((opt, idx) => (
-            <OptionButton
-              key={idx}
-              option={opt}
-              selected={selectedAnswers[currentQuestionIndex] === idx}
-              onPress={() => handleOptionSelect(idx)}
-            />
-          ))}
-          {selectedAnswers[currentQuestionIndex] !== undefined && (
-            <ChatBubble
-              message={currentQuestion.feedback[selectedAnswers[currentQuestionIndex]]}
-              sender="robby"
-            />
-          )}
-          <ProgressBar value={((currentQuestionIndex + 1) / 6) * 100} />
-          {selectedAnswers[currentQuestionIndex] !== undefined && (
-            <Text
-              style={{ marginTop: 12, fontWeight: 'bold', color: '#0288d1', textAlign: 'center' }}
-              onPress={goToNext}
-            >
-              Siguiente
-            </Text>
-          )}
-        </View>
-      ) : (
-        <Text>No se pudieron cargar las simulaciones.</Text>
-      )}
-    </ScrollView>
+
+        <ProgressBar value={((currentQuestionIndex + 1) / 6) * 100} />
+      </LinearGradient>
+
+      <ScrollView 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+            <Text>Cargando simulación...</Text>
+          </View>
+        ) : (
+          chatHistory.map((chat, idx) => (
+            <ChatBubble key={idx} message={chat.message} sender={chat.sender} />
+          ))
+        )}
+
+        {/* Opciones */}
+        {!isLoading && questions[currentQuestionIndex] && selectedAnswers[currentQuestionIndex] === undefined && (
+          <View style={{ marginTop: 16 }}>
+            {questions[currentQuestionIndex].options.map((opt, idx) => (
+              <OptionButton
+                key={idx}
+                option={opt}
+                selected={false}
+                onPress={() => handleOptionSelect(idx)}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Botón Siguiente */}
+        {!isLoading && selectedAnswers[currentQuestionIndex] !== undefined && (
+          <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
+            <Text style={styles.nextButtonText}>Siguiente</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  topBar: {
+    padding: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  closeButton: {
+    backgroundColor: '#2F32CD',
+    borderRadius: 15,
+    padding: 4,
+    marginTop: 10, 
+  },
+  topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
+  contentContainer: { padding: 16, paddingBottom: 100 },
+  loadingContainer: { justifyContent: 'center', alignItems: 'center', marginTop: 50 },
+  nextButton: {
+    marginTop: 16,
+    backgroundColor: '#2F32CD',
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+  },
+  nextButtonText: { color: 'white', fontWeight: '600', fontSize: 16 },
+});

@@ -8,26 +8,34 @@ interface OptionButtonProps {
 
 export const OptionButton = ({ option, selected, onPress }: OptionButtonProps) => (
   <TouchableOpacity
-    style={[styles.button, selected && styles.selected]}
+    style={[styles.card, selected && styles.selectedCard]}
     onPress={onPress}
+    activeOpacity={0.8}
   >
     <Text style={styles.text}>{option}</Text>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 12,
+  card: {
+    padding: 16,
     marginVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#e0f7fa',
     borderWidth: 1,
-    borderRadius: 8,
-    borderColor: '#0288d1',
-    backgroundColor: 'white',
+    borderColor: '#b2ebf2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  selected: {
+  selectedCard: {
     backgroundColor: '#81d4fa',
+    borderColor: '#0288d1',
   },
   text: {
     fontSize: 16,
+    color: '#333',
   },
 });
