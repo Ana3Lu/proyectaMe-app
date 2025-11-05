@@ -11,13 +11,10 @@ import { fetchSimulation } from '../../services/gemini.service';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-interface UserScore { [key: string]: number }
-
 export default function MainScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
-  const [userScore, setUserScore] = useState<UserScore>({});
   const [isLoading, setIsLoading] = useState(true);
   const [chatHistory, setChatHistory] = useState<{ message: string; sender: 'robby' | 'user' }[]>([]);
 
@@ -27,6 +24,10 @@ export default function MainScreen() {
     setIsLoading(true);
     try {
       const simulation = await fetchSimulation();
+      if (!simulation || simulation.length === 0) {
+        console.warn('Simulación vacía');
+        return;
+      }
       setQuestions(simulation);
       setChatHistory([{ message: simulation[0].question, sender: 'robby' }]);
     } catch (err) {
@@ -41,10 +42,6 @@ export default function MainScreen() {
 
     const currentQuestion = questions[currentQuestionIndex];
     setSelectedAnswers({ ...selectedAnswers, [currentQuestionIndex]: optionIndex });
-
-    // Actualizamos score
-    const skillKey = currentQuestion.strengths?.[optionIndex];
-    if (skillKey) setUserScore({ ...userScore, [skillKey]: (userScore[skillKey] || 0) + 1 });
 
     // Mensaje del usuario
     setChatHistory(prev => [...prev, { message: currentQuestion.options[optionIndex], sender: 'user' }]);
@@ -71,7 +68,6 @@ export default function MainScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={80}
     >
-      {/* TopBar */}
       <LinearGradient
         colors={['#7794F5', '#2F32CD']}
         start={{ x: 0, y: 0 }}
@@ -83,10 +79,13 @@ export default function MainScreen() {
         </TouchableOpacity>
 
         <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-          <Text style={styles.topBarText}>Decisión {currentQuestionIndex + 1} de 6</Text>
+          <Text style={styles.topBarText}>
+  Decisión {questions.length > 0 ? currentQuestionIndex + 1 : 0} de {questions.length}
+</Text>
+
         </View>
 
-        <ProgressBar value={((currentQuestionIndex + 1) / 6) * 100} />
+        <ProgressBar value={((currentQuestionIndex + 1) / questions.length) * 100} />
       </LinearGradient>
 
       <ScrollView 
@@ -104,7 +103,6 @@ export default function MainScreen() {
           ))
         )}
 
-        {/* Opciones */}
         {!isLoading && questions[currentQuestionIndex] && selectedAnswers[currentQuestionIndex] === undefined && (
           <View style={{ marginTop: 16 }}>
             {questions[currentQuestionIndex].options.map((opt, idx) => (
@@ -118,7 +116,6 @@ export default function MainScreen() {
           </View>
         )}
 
-        {/* Botón Siguiente */}
         {!isLoading && selectedAnswers[currentQuestionIndex] !== undefined && (
           <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
             <Text style={styles.nextButtonText}>Siguiente</Text>

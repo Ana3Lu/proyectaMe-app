@@ -7,21 +7,21 @@ export const fetchSimulation = async () => {
     {
       "parts": [
         {
-          "text": `Genera una simulación narrativa interactiva para mi app vocacional ProyectaME que sirve para que 
+          "text": `Genera una array de objetos que es una simulación narrativa de solo 6 decisiones tipo cuestionario (tamaño de array), interactiva para mi app vocacional ProyectaME que sirve para que 
               los usuarios puedan sentir por medio de una simulacion los tipos de dilemas o situaciones que podrían ocurrir
               en distintos oficios o profesiones.
                 La simulación debe tener 6 decisiones secuenciales (es como si fuera un cuestionario pero
                 todo se presenta como historia por medio de chats donde el usuario va haciendo la simulación junto con 
-                robby, un asistente virtual de la app que serás tú y que va chateando con el usuario presentando el 
+                robby, un asistente virtual de la app que serás tú (pero no te menciones... inicia con la simulación de una vez) y que va chateando con el usuario presentando el 
                 contexto de la situación de la simulación y demás, y luego le pregunta qué haría el usuario, donde el responde y 
                 presentas una retroalimentación de su decisión en la situación y continuas narrando hasta acabar la simulación), 
-                cada decisión con:
-                - question: escenario o situación a resolver
-                - options: mínimo 4 opciones de respuesta
-                - feedback: retroalimentación para cada opción
+                cada decisión (que es un objeto de la simulación dentro de un array) debe tener la siguiente estructura con:
+                - question: escenario o situación a resolver (string)
+                - options: mínimo 4 opciones de respuesta posibles (array de strings)
+                - feedback: retroalimentación para cada opción (equivalente a la cantidad de opciones, array de strings)
 
                 Ejemplo de simulaciones: Día como médico, Estudio de diseño, Desarrollador de apps.
-                Devuelve un array JSON de objetos siguiendo esta estructura.`
+                Devuelve un array JSON de objetos siguiendo esta estructura... Asi simple y claro, sin nada adicional, y el feedback debe ser concreto y breve (1-2 frases máximo).`
         }
       ]
     }
@@ -34,21 +34,18 @@ export const fetchSimulation = async () => {
         "type": "OBJECT",
         "properties": {
           "question": { "type": "STRING" },
-          "options": { 
-            "type": "ARRAY", 
-            "items": { "type": "STRING" } 
-          },
-          "feedback": { 
-            "type": "ARRAY", 
-            "items": { "type": "STRING" } 
-          }
+          "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+          "feedback": { "type": "ARRAY", "items": { "type": "STRING" } }
         }
       }
     }
   }
 };
 
-  
+
+
+
+
   try {
     const response = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
@@ -62,42 +59,30 @@ export const fetchSimulation = async () => {
       }
     );
 
-    console.log("Fetch Gemini response status:", response.status, response.statusText);
     const data: GeminiResponse = await response.json();
-    console.log("Raw data from Gemini:", JSON.stringify(data, null, 2));
-
-    // Extraemos el texto
     const textData = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!textData) {
-      console.warn("No llegaron datos de Gemini");
-      return [];
-    }
 
-    // Intentamos parsear a JSON
+    if (!textData) return [];
+
     try {
-      const parsedData = JSON.parse(textData);
+      const parsedData: SimulationQuestion[] = JSON.parse(textData);
       if (Array.isArray(parsedData)) {
-        // Validamos propiedades de cada pregunta
-        parsedData.forEach((q: SimulationQuestion) => {
-        // Solo rellenar si no existe
-        if (!q.options || q.options.length === 0) q.options = ['Opción 1','Opción 2','Opción 3','Opción 4'];
-        if (!q.feedback || q.feedback.length === 0) q.feedback = q.options.map(() => 'Retroalimentación pendiente');
+        // Aseguramos opciones y feedback por seguridad
+        parsedData.forEach(q => {
+          if (!q.options || q.options.length !== 4) q.options = ['Opción 1','Opción 2','Opción 3','Opción 4'];
+          if (!q.feedback || q.feedback.length !== 4) q.feedback = q.options.map(() => 'Retroalimentación pendiente');
         });
         return parsedData;
       } else {
-        console.warn("La respuesta de Gemini no es un array:", textData);
+        console.warn('Respuesta de Gemini no es un array:', textData);
         return [];
       }
     } catch (err) {
-      console.warn("Error parseando la respuesta de Gemini:", textData, err);
+      console.warn('Error parseando respuesta de Gemini:', textData, err);
       return [];
     }
   } catch (err) {
-    console.error("Error fetching Gemini simulation:", err);
+    console.error('Error fetching Gemini simulation:', err);
     return [];
   }
 };
-
-//"strengths": ["(# puntaje) habilidad1", "(# puntaje) habilidad2", "(# puntaje) habilidad3", "(# puntaje) habilidad4"]
-                    //if (!q.strengths || q.strengths.length === 0) q.strengths = [];
-        //            strengths: { type: 'ARRAY', items: { type: 'STRING' } }
