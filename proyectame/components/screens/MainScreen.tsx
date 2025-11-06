@@ -17,19 +17,30 @@ export default function MainScreen() {
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [chatHistory, setChatHistory] = useState<{ message: string; sender: 'robby' | 'user' }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [results, setResults] = useState<{ skill: string; score: number }[]>([]);
 
   useEffect(() => {
     loadSimulation();
   }, []);
 
   const loadSimulation = async () => {
+    // ✅ Reiniciar todo antes de cargar
     setIsLoading(true);
+    setIsFinished(false);
+    setResults([]);
+    setSelectedAnswers({});
+    setCurrentIndex(0);
+    setChatHistory([]);
+    setQuestions([]); // limpiamos también las preguntas
+
     const body = {
       "contents": [
         {
           "parts": [
             {
-              text: "Retorna directamente una lista JSON con exactamente 6 decisiones secuenciales para una simulación narrativa tipo chat vocacional. Cada decisión representa un dilema o situación profesional donde el usuario debe elegir qué haría. La narrativa debe estar incluida dentro del campo 'question' (como si Robby presentara la situación, pero sin mencionarlo explícitamente). Cada decisión debe incluir: 4 opciones posibles ('options') y retroalimentación específica para cada opción ('feedback'). No incluyas texto introductorio, comentarios ni código Markdown — solo el array JSON. Ejemplos de simulaciones: 'Un día como médico', 'Estudio de diseño', 'Desarrollador de apps'."            }
+              text: "Retorna directamente una lista JSON con exactamente 6 decisiones secuenciales para una simulación narrativa tipo chat vocacional de una carrera u oficio. Cada decisión representa un dilema o situación profesional de ese oficio, donde el usuario debe elegir qué haría. La narrativa debe ir en 'question' (como si Robby presentara la situación, pero sin mencionarlo). Cada decisión debe incluir: mínimo 4 opciones posibles ('options'), retroalimentación específica por opción ('feedback'), una puntuación del 1 al 5 ('scores') y una habilidad blanda asociada ('skills'), manteniendo el mismo orden entre arrays. Ejemplo de habilidades: empatía, liderazgo, comunicación, trabajo en equipo, adaptabilidad, creatividad o ética. No incluyas texto extra ni código Markdown — solo el array JSON. Ejemplos de simulaciones: 'Un día como médico', 'Estudio de diseño', 'Desarrollador de apps'."
+            },
           ]
         }
       ],
@@ -42,7 +53,9 @@ export default function MainScreen() {
             "properties": {
               "question": { "type": "STRING" },
               "options": { "type": "ARRAY", "items": { "type": "STRING" } },
-              "feedback": { "type": "ARRAY", "items": { "type": "STRING" } }
+              "feedback": { "type": "ARRAY", "items": { "type": "STRING" } },
+              "scores": { "type": "ARRAY", "items": { "type": "NUMBER" } },
+              "skills": { "type": "ARRAY", "items": { "type": "STRING" } }
             }
           }
         }
@@ -89,6 +102,8 @@ export default function MainScreen() {
     if (selectedAnswers[currentIndex] !== undefined) return;
 
     const current = questions[currentIndex];
+    if (!current) return;
+
     setSelectedAnswers({ ...selectedAnswers, [currentIndex]: optionIndex });
 
     setChatHistory(prev => [
@@ -101,86 +116,122 @@ export default function MainScreen() {
         ...prev,
         { message: current.feedback[optionIndex], sender: "robby" }
       ]);
-    }, 700);
+    }, 600);
+
+    const selectedSkill = current.skills[optionIndex];
+    const selectedScore = current.scores[optionIndex];
+    setResults(prev => [...prev, { skill: selectedSkill, score: selectedScore }]);
   };
 
   const goToNext = () => {
     const nextIndex = currentIndex + 1;
+
     if (nextIndex < questions.length) {
       setCurrentIndex(nextIndex);
       setChatHistory(prev => [
         ...prev,
         { message: questions[nextIndex].question, sender: "robby" }
       ]);
-    } else {
+    } else if (!isFinished) {
+      const skillTotals: Record<string, number> = {};
+      results.forEach(r => {
+        skillTotals[r.skill] = (skillTotals[r.skill] || 0) + r.score;
+      });
+
+      const sorted = Object.entries(skillTotals)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+      const topSkills = sorted
+        .map(([skill, score]) => `**${skill}** (${score})`)
+        .join(", ");
+
       setChatHistory(prev => [
         ...prev,
-        { message: "¡Simulación finalizada! 🎉 Revisa tu perfil para más recomendaciones.", sender: "robby" }
+        { message: "¡Simulación finalizada! 🎉", sender: "robby" },
+        { message: `Tus principales fortalezas fueron: ${topSkills}`, sender: "robby" },
+        { message: "Revisa tu perfil para ver tu rendimiento y más recomendaciones. 📊", sender: "robby" }
       ]);
+
+      setIsFinished(true);
     }
   };
 
+  const currentQuestion = questions[currentIndex];
+
   return (
     <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={80}
-        >
-          <LinearGradient
-            colors={['#7794F5', '#2F32CD']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.topBar}
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={80}
+    >
+      <LinearGradient
+        colors={['#7794F5', '#2F32CD']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.topBar}
+      >
+        <TouchableOpacity style={styles.closeButton} onPress={loadSimulation}>
+          <Ionicons name="close" size={28} color="white" />
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+          <Text style={styles.topBarText}>
+            Decisión {questions.length > 0 ? currentIndex + 1 : 0} de {questions.length}
+          </Text>
+        </View>
+
+        <ProgressBar value={questions.length ? ((currentIndex + 1) / questions.length) * 100 : 0} />
+      </LinearGradient>
+
+      <ScrollView 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+            <Text>Cargando simulación...</Text>
+          </View>
+        ) : (
+          chatHistory.map((chat, idx) => (
+            <ChatBubble key={idx} message={chat.message} sender={chat.sender} />
+          ))
+        )}
+
+        {/* ✅ Renderiza opciones solo si existen */}
+        {!isLoading && currentQuestion?.options && selectedAnswers[currentIndex] === undefined && (
+          <View style={{ marginTop: 16 }}>
+            {currentQuestion.options.map((opt, idx) => (
+              <OptionButton
+                key={idx}
+                option={opt}
+                selected={false}
+                onPress={() => handleOptionSelect(idx)}
+              />
+            ))}
+          </View>
+        )}
+
+        {!isLoading && !isFinished && selectedAnswers[currentIndex] !== undefined && (
+          <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
+            <Text style={styles.nextButtonText}>
+              {currentIndex < questions.length - 1 ? "Siguiente" : "Siguiente"}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ✅ Solo se muestra Finalizar si terminó y no está cargando */}
+        {!isLoading && isFinished && (
+          <TouchableOpacity
+            style={[styles.nextButton, { marginTop: 8, backgroundColor: '#FEE543' }]}
+            onPress={() => console.log("TODO: Redirigir a perfil")}
           >
-            <TouchableOpacity style={styles.closeButton}>
-              <Ionicons name="close" size={28} color="white" />
-            </TouchableOpacity>
-    
-            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-              <Text style={styles.topBarText}>
-      Decisión {questions.length > 0 ? currentIndex + 1 : 0} de {questions.length}
-    </Text>
-    
-            </View>
-    
-            <ProgressBar value={((currentIndex + 1) / questions.length) * 100} />
-          </LinearGradient>
-    
-          <ScrollView 
-            contentContainerStyle={styles.contentContainer} 
-            showsVerticalScrollIndicator={false}
-          >
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-                <Text>Cargando simulación...</Text>
-              </View>
-            ) : (
-              chatHistory.map((chat, idx) => (
-                <ChatBubble key={idx} message={chat.message} sender={chat.sender} />
-              ))
-            )}
-    
-            {!isLoading && questions[currentIndex] && selectedAnswers[currentIndex] === undefined && (
-              <View style={{ marginTop: 16 }}>
-                {questions[currentIndex].options.map((opt, idx) => (
-                  <OptionButton
-                    key={idx}
-                    option={opt}
-                    selected={false}
-                    onPress={() => handleOptionSelect(idx)}
-                  />
-                ))}
-              </View>
-            )}
-    
-            {!isLoading && selectedAnswers[currentIndex] !== undefined && (
-              <TouchableOpacity style={styles.nextButton} onPress={goToNext}>
-                <Text style={styles.nextButtonText}>Siguiente</Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-        </KeyboardAvoidingView>
+            <Text style={styles.finalButtonText}>Finalizar</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -209,4 +260,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextButtonText: { color: 'white', fontWeight: '600', fontSize: 16 },
+  finalButtonText: { color: '#130F40', fontWeight: '600', fontSize: 16 }
 });
