@@ -171,8 +171,8 @@ export default function MainScreen() {
         end={{ x: 1, y: 0 }}
         style={styles.topBar}
       >
-        <TouchableOpacity style={styles.closeButton} onPress={loadSimulation}>
-          <Ionicons name="close" size={28} color="white" />
+        <TouchableOpacity style={styles.closeButton} onPress={goBack => console.log("TODO: Cerrar simulación")}>
+          <Ionicons name="close" size={32} color="white" />
         </TouchableOpacity>
 
         <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
@@ -199,7 +199,7 @@ export default function MainScreen() {
           ))
         )}
 
-        {/* ✅ Renderiza opciones solo si existen */}
+        {/* Renderiza opciones solo si existen */}
         {!isLoading && currentQuestion?.options && selectedAnswers[currentIndex] === undefined && (
           <View style={{ marginTop: 16 }}>
             {currentQuestion.options.map((opt, idx) => (
@@ -221,11 +221,11 @@ export default function MainScreen() {
           </TouchableOpacity>
         )}
 
-        {/* ✅ Solo se muestra Finalizar si terminó y no está cargando */}
+        {/* Solo se muestra Finalizar si terminó y no está cargando */}
         {!isLoading && isFinished && (
           <TouchableOpacity
             style={[styles.nextButton, { marginTop: 8, backgroundColor: '#FEE543' }]}
-            onPress={() => console.log("TODO: Redirigir a perfil")}
+            onPress={goFeedback => console.log("TODO: Ir a feedback")}
           >
             <Text style={styles.finalButtonText}>Finalizar</Text>
           </TouchableOpacity>
@@ -237,7 +237,8 @@ export default function MainScreen() {
 
 const styles = StyleSheet.create({
   topBar: {
-    padding: 20,
+    padding: 30,
+    paddingTop: 40,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     flexDirection: 'row',
@@ -246,8 +247,7 @@ const styles = StyleSheet.create({
   closeButton: {
     backgroundColor: '#2F32CD',
     borderRadius: 15,
-    padding: 4,
-    marginTop: 10, 
+    padding: 4, 
   },
   topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
   contentContainer: { padding: 16, paddingBottom: 100 },
