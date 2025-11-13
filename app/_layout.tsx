@@ -1,22 +1,22 @@
-import Constants from 'expo-constants';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+//import Constants from 'expo-constants';
+//import * as Device from 'expo-device';
+//import * as Notifications from 'expo-notifications';
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+//import { useEffect, useState } from 'react';
+//import { Platform } from 'react-native';
 import 'react-native-reanimated';
 
-Notifications.setNotificationHandler({
+/*Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: false,
     shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
   }),
-});
+});*/
 
 export default function RootLayout() {
-  const [expoPushToken, setExpoPushToken] = useState('');
+  /*const [expoPushToken, setExpoPushToken] = useState('');
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
   const [notification, setNotification] = useState<Notifications.Notification | undefined>(
     undefined
@@ -40,13 +40,14 @@ export default function RootLayout() {
       notificationListener.remove();
       responseListener.remove();
     };
-  }, []);
+  }, []);*/
 
   return <Stack screenOptions={{ headerShown: false }}>
     <Stack.Screen name="index" />
   </Stack>;
 }
 
+/*
 async function registerForPushNotificationsAsync() {
   let token;
 
@@ -93,4 +94,4 @@ async function registerForPushNotificationsAsync() {
   }
 
   return token;
-}
+}*/

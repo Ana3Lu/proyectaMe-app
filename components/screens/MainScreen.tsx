@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
-import { 
-  ActivityIndicator, ScrollView, Text, View, TouchableOpacity, 
-  StyleSheet, KeyboardAvoidingView, Platform 
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SimulationQuestion } from '@/types/simulation.type';
-import { GeminiResponse } from '@/types/responses.type';
 import { ChatBubble } from '@/components/ui/ChatBubble';
 import { OptionButton } from '@/components/ui/OptionButton';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { GeminiResponse } from '@/types/responses.type';
+import { SimulationQuestion } from '@/types/simulation.type';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView, Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 export default function MainScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
@@ -63,6 +68,7 @@ export default function MainScreen() {
     };
 
     try {
+      console.log("API Key:", process.env.EXPO_PUBLIC_GEMINI_API_KEY);
       const response = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
         {
