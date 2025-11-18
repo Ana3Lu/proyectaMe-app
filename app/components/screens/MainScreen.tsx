@@ -1,6 +1,6 @@
-import { ChatBubble } from '@/components/ui/ChatBubble';
-import { OptionButton } from '@/components/ui/OptionButton';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+import { ChatBubble } from '@/app/components/ui/ChatBubble';
+import { OptionButton } from '@/app/components/ui/OptionButton';
+import { ProgressBar } from '@/app/components/ui/ProgressBar';
 import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
 import { Ionicons } from '@expo/vector-icons';

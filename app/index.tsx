@@ -1,5 +1,5 @@
-import MainScreen from '@/components/screens/MainScreen';
+import { Redirect } from "expo-router";
 
 export default function HomeScreen() {
-  return <MainScreen />;
+  return <Redirect href="/main/LogoScreen" />;
 }
