@@ -1,159 +1,170 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useState } from "react"; // 👈 IMPORTAR useState
 import {
   Image,
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 
-// Importar el componente reutilizable
-import { OptionButton } from "../components/ui/OptionButton";
-
-// Definimos los identificadores de las opciones
-type OptionKey = 'simulaciones' | 'mapa' | 'comunidad' | null;
-
 export default function TutorialScreen() {
-    // 1. ESTADO: Estado para rastrear qué botón está seleccionado
-    const [selectedOption, setSelectedOption] = useState<OptionKey>(null);
 
-    // Función para manejar la selección
-    const handleSelectOption = (key: OptionKey) => {
-        // Opcional: Permitir deseleccionar si se presiona de nuevo
-        // setSelectedOption(key === selectedOption ? null : key);
-        setSelectedOption(key); // Solo seleccionar
-        console.log(`Opción seleccionada: ${key}`);
-    };
+  const robbyImage = require("../../assets/images/robby-character.png");
 
-    return (
-        <LinearGradient
-            colors={["#7794F5", "#2F32CD"]}
-            style={styles.container}
-        >
-            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+  return (
+    <LinearGradient
+      colors={["#7794F5", "#2F32CD"]}
+      style={styles.container}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            <View style={styles.contentArea}>
-                {/* Logo/Imagen de Robby con Círculo */}
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require("../../assets/images/robby-character.png")}
-                        style={styles.logo}
-                    />
-                </View>
+      <View style={styles.contentArea}>
 
-                {/* Contenido Principal */}
-                <Text style={styles.greetingTitle}>¡Hola! Soy <Text style={styles.robbyName}>Robby</Text></Text>
-                <Text style={styles.subtitle}>
-                    Tu compañero en el viaje hacia descubrir tu futuro profesional
-                </Text>
-                <Text style={styles.sectionTitle}>Encontrarás:</Text>
+        {/* Wrapper del ovalo y logo */}
+        <View style={styles.logoWrapper}>
+          <View style={styles.ovalBackground} />
+          <Image source={robbyImage} style={styles.logo} />
+        </View>
 
-                {/* 2. IMPLEMENTACIÓN: Pasar `selected` y la función `onPress` */}
-                <OptionButton
-                    option="Simulaciones interactivas para explorar profesiones"
-                    iconName="rocket-outline"
-                    selected={selectedOption === 'simulaciones'} // 👈 Nuevo prop
-                    onPress={() => handleSelectOption('simulaciones')} // 👈 Nueva función
-                />
+        {/* Título */}
+        <Text style={styles.title}>
+          ¡Hola! Soy <Text style={styles.highlightText}>Robby</Text>
+        </Text>
 
-                <OptionButton
-                    option="Mapa vocacional personalizado según tus afinidades"
-                    iconName="map-outline"
-                    selected={selectedOption === 'mapa'} // 👈 Nuevo prop
-                    onPress={() => handleSelectOption('mapa')} // 👈 Nueva función
-                />
+        {/* Subtítulos */}
+        <Text style={styles.subtitle}>
+          Tu compañero en el viaje hacia descubrir tu futuro profesional
+        </Text>
 
-                <OptionButton
-                    option="Comunidad educativa para compartir experiencias"
-                    iconName="chatbubbles-outline"
-                    selected={selectedOption === 'comunidad'} // 👈 Nuevo prop
-                    onPress={() => handleSelectOption('comunidad')} // 👈 Nueva función
-                />
+        <Text style={[styles.sectionTitle, styles.highlightText]}>
+          Encontrarás:
+        </Text>
 
-                {/* Botón Principal de Navegación */}
-                <TouchableOpacity
-                    style={styles.primaryButton}
-                    onPress={() => router.replace("/(auth)/LoginScreen")} 
-                >
-                    <Text style={styles.buttonText}>Explorar mi futuro</Text>
-                </TouchableOpacity>
-            </View>
-        </LinearGradient>
-    );
+        {/* Tarjetas */}
+        <View style={styles.card}>
+          <Text style={styles.cardText}>
+            🎮 <Text style={styles.cardBold}>Simulaciones interactivas</Text> para explorar profesiones
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardText}>
+            🗺️ <Text style={styles.cardBold}>Mapa vocacional</Text> personalizado según tus afinidades
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardText}>
+            💬 <Text style={styles.cardBold}>Comunidad educativa</Text> para compartir experiencias
+          </Text>
+        </View>
+
+        {/* Botón */}
+        <View style={styles.primaryButton} onTouchEnd={() => router.replace("/(auth)/LoginScreen")}>
+          <Text style={styles.buttonText}>Explorar mi futuro</Text>
+        </View>
+      </View>
+    </LinearGradient>
+  );
 }
 
 const styles = StyleSheet.create({
-    // ... (Mantener tus estilos existentes)
-    container: {
-        flex: 1,
-    },
-    contentArea: {
-        flex: 1,
-        alignItems: "center",
-        paddingTop: 70,
-        paddingHorizontal: 30,
-        justifyContent: 'space-between',
-        paddingBottom: 50,
-    },
-    logoContainer: {
-        backgroundColor: 'white',
-        borderRadius: 100,
-        padding: 15,
-        marginBottom: 20,
-        shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 10,
-        elevation: 8,
-    },
-    logo: {
-        width: 80,
-        height: 80,
-        resizeMode: "contain",
-    },
-    greetingTitle: {
-        fontSize: 28,
-        fontWeight: "bold",
-        color: "#fff",
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    robbyName: {
-        color: '#90EE90', // Verde brillante para el nombre Robby
-    },
-    subtitle: {
-        fontSize: 18, // Tamaño de fuente solicitado
-        color: "#E0E0E0",
-        textAlign: "center",
-        marginBottom: 30,
-        fontWeight: '500', // Poppins
-    },
-    sectionTitle: {
-        color: "#fff",
-        fontSize: 18, // Tamaño de fuente solicitado
-        fontWeight: "700",
-        marginBottom: 15,
-        alignSelf: 'center',
-        marginLeft: 20,
-    },
-    primaryButton: {
-        width: "100%",
-        paddingVertical: 16,
-        borderRadius: 30,
-        alignItems: "center",
-        backgroundColor: "#DD3282",
-        shadowColor: '#DD3282',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.6,
-        shadowRadius: 10,
-        elevation: 8,
-        marginTop: 30,
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 20, fontWeight: "700"
-    },
+  container: {
+    flex: 1,
+  },
+  contentArea: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 100,
+    paddingHorizontal: 30,
+    paddingBottom: 50,
+  },
+  logoWrapper: {
+    width: 200,
+    height: 140,   
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  ovalBackground: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    backgroundColor: 'white',
+    borderRadius: 100,
+    transform: [{ scaleX: 1.6 }],
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  logo: {
+    width: 160,
+    height: 160,
+    resizeMode: "contain",
+    position: 'absolute',
+    marginBottom: 25,
+  },
+  title: {
+    fontSize: 32,
+    color: "#fff",
+    textAlign: 'center',
+    fontFamily: 'PoppinsBold',
+    marginBottom: 10,
+  },
+  highlightText: {
+    color: "#FEE543",
+    fontFamily: 'PoppinsBold',
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 15,
+    paddingHorizontal: 15,
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: 'PoppinsBold',
+    marginBottom: 12,
+  },
+  card: {
+    width: "90%",
+    backgroundColor: "#9DA5FF",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  cardText: {
+    fontSize: 16,
+    color: "#1A1A1A",
+    fontFamily: "PoppinsRegular",
+    textAlign: "center",
+  },
+  cardBold: {
+    fontWeight: "bold"
+  },
+  primaryButton: {
+    width: "100%",
+    paddingVertical: 10,
+    borderRadius: 30,
+    alignItems: "center",
+    backgroundColor: "#DD3282",
+    shadowColor: '#DD3282',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.8,
+    shadowRadius: 15,
+    elevation: 12,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "PoppinsBold",
+  },
 });

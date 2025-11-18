@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     },
     primaryButton: {
         width: "100%",
-        paddingVertical: 5,
+        paddingVertical: 10,
         borderRadius: 30,
         alignItems: "center",
         backgroundColor: "#DD3282",
