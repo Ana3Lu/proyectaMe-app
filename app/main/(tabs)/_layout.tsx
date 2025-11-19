@@ -1,8 +1,6 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-import { Text } from "react-native";
-
 export default function TabLayout() {
   return (
     <Tabs
@@ -14,28 +12,22 @@ export default function TabLayout() {
           borderTopColor: "#E5E5E5",
           height: 70,
           paddingBottom: 10,
+          paddingTop: 5,
         },
-        tabBarLabel: ({ focused }) => (
-          <Text
-            style={{
-              fontFamily: focused ? "PoppinsBold" : "PoppinsRegular",
-              color: focused ? "#2F32CD" : "#999",
-              fontSize: 11,
-            }}
-          >
-            {route.name}
-          </Text>
-        ),
+        tabBarLabelStyle: {
+          fontSize: 14,
+          fontWeight: "600",
+        },
       })}
     >
-
       <Tabs.Screen
         name="HomeScreen"
         options={{
+          title: "Inicio",
           tabBarIcon: ({ focused }) => (
-            <MaterialIcons
-              name={focused ? "home" : "home-filled"}
-              size={26}
+            <FontAwesome5
+              name="home"
+              size={28}
               color={focused ? "#2F32CD" : "#999"}
             />
           ),
@@ -43,10 +35,15 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="Simulaciones"
+        name="SimulacionesScreen"
         options={{
+          title: "Simulaciones",
           tabBarIcon: ({ focused }) => (
-            <FontAwesome5 name="brain" size={26} color={focused ? "#2F32CD" : "#999"} />
+            <FontAwesome5
+              name="brain"
+              size={24}
+              color={focused ? "#2F32CD" : "#999"}
+            />
           ),
         }}
       />
@@ -54,9 +51,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="Mapa"
         options={{
+          title: "Mapa",
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
-              name={focused ? "map" : "map"} // no tiene una versión outline
+              name="map"
               size={26}
               color={focused ? "#2F32CD" : "#999"}
             />
@@ -67,9 +65,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="Comunidad"
         options={{
+          title: "Comunidad",
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
-              name={focused ? "forum" : "forum"}
+              name="forum"
               size={26}
               color={focused ? "#2F32CD" : "#999"}
             />
@@ -80,6 +79,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="Perfil"
         options={{
+          title: "Perfil",
           tabBarIcon: ({ focused }) => (
             <MaterialIcons
               name={focused ? "person" : "person-outline"}
@@ -89,7 +89,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
     </Tabs>
   );
 }

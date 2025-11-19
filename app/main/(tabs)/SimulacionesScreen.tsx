@@ -47,7 +47,7 @@ export default function SimulacionesScreen() {
 
 
         {/* --- LISTA DE SIMULACIONES --- */}
-        <View style={{ padding: 20 }}>
+        <View style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
 
           {/* CARD TEMPLATE (Se repite) */}
           {[
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 25,
     paddingTop: 45,
-    paddingBottom: 40,
+    paddingBottom: 30,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -188,8 +188,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 18,
-    padding: 18,
-    marginBottom: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 15,
+    marginBottom: 12,
     borderWidth: 2,
   },
   cardHeaderRow: {
@@ -213,13 +214,14 @@ const styles = StyleSheet.create({
   categoryText: {
     fontFamily: "PoppinsBold",
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
   },
   cardDesc: {
     marginTop: 8,
     fontFamily: "PoppinsRegular",
     color: "#130F40",
     flexWrap: "wrap",
+    fontSize: 16,
   },
 
   /* INFO ROW WRAPS */
@@ -227,13 +229,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 12,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   infoItem: {
     flexDirection: "row",
     alignItems: "center",
     marginRight: 18,
-    marginBottom: 6,
   },
   infoText: {
     marginLeft: 6,

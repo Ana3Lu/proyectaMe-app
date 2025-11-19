@@ -5,6 +5,7 @@ import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -30,7 +31,7 @@ export default function SimulationScreen() {
   }, []);
 
   const loadSimulation = async () => {
-    // ✅ Reiniciar todo antes de cargar
+    // Reiniciar todo antes de cargar
     setIsLoading(true);
     setIsFinished(false);
     setResults([]);
@@ -177,7 +178,7 @@ export default function SimulationScreen() {
         end={{ x: 1, y: 0 }}
         style={styles.topBar}
       >
-        <TouchableOpacity style={styles.closeButton} onPress={goBack => console.log("TODO: Cerrar simulación")}>
+        <TouchableOpacity style={styles.closeButton} onPress={goBack => router.back()}>
           <Ionicons name="close" size={32} color="white" />
         </TouchableOpacity>
 
@@ -230,20 +231,40 @@ export default function SimulationScreen() {
         {/* Solo se muestra Finalizar si terminó y no está cargando */}
         {!isLoading && isFinished && (
           <TouchableOpacity
-            style={[styles.nextButton, { marginTop: 8, backgroundColor: '#FEE543' }]}
-            onPress={goFeedback => console.log("TODO: Ir a feedback")}
+            style={[styles.nextButton, { marginTop: 8, backgroundColor: '#DD3282' }]}
+            onPress={goFeedback => router.push('/main/FeedbackScreen')}
           >
             <Text style={styles.finalButtonText}>Finalizar</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Barra de chat falsa abajo */}
+      <View style={styles.fakeInputContainer}>
+        <View style={styles.fakeTextInput}>
+          <Text style={styles.fakePlaceholder}>Decide con Rooby...</Text>
+        </View>
+
+        <TouchableOpacity style={styles.sendButton}>
+          <LinearGradient
+            colors={['#7794F5', '#2F32CD']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.sendButtonGradient}
+          >
+            <Ionicons name="send" size={20} color="white" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   topBar: {
-    padding: 30,
+    paddingHorizontal: 30,
+    paddingVertical: 16,
     paddingTop: 40,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -255,7 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 4, 
   },
-  topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
+  topBarText: { color: 'white', fontWeight: '600', fontSize: 16, paddingLeft: 10 },
   contentContainer: { padding: 16, paddingBottom: 100 },
   loadingContainer: { justifyContent: 'center', alignItems: 'center', marginTop: 50 },
   nextButton: {
@@ -266,5 +287,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextButtonText: { color: 'white', fontWeight: '600', fontSize: 16 },
-  finalButtonText: { color: '#130F40', fontWeight: '600', fontSize: 16 }
+  finalButtonText: { color: '#FFF', fontWeight: '600', fontSize: 16 },
+  fakeInputContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  fakeTextInput: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+  },
+  fakePlaceholder: {
+    color: '#999',
+    fontSize: 14,
+    fontFamily: 'PoppinsRegular',
+  },
+  sendButton: {
+    marginLeft: 10,
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+  sendButtonGradient: {
+    width: 50,
+    height: 45,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  
+  },
 });
