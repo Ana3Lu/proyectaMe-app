@@ -11,7 +11,7 @@ export const ChatBubble = ({ message, sender }: ChatBubbleProps) => (
       sender === 'robby' ? { flexDirection: 'row' } : { flexDirection: 'row-reverse' }
     ]}
   >
-    {sender === 'robby' && <Image source={require("../../../assets/images/robby-character.png")} style={styles.avatar} />}
+    {sender === 'robby' && <Image source={require("../../../assets/images/robby.png")} style={styles.avatar} />}
     <View style={[styles.bubble, sender === 'robby' ? styles.robby : styles.user]}>
       <Text style={[styles.text, sender === 'robby' ? styles.messageText : styles.userText]}>
         {message}

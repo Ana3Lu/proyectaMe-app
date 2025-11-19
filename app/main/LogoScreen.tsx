@@ -5,13 +5,14 @@ import {
     StatusBar,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function LogoScreen() {
 
-    const robbyImage = require("../../assets/images/robby-character.png");
+    const robbyImage = require("../../assets/images/robby.png");
 
     return (
         <LinearGradient
@@ -20,7 +21,7 @@ export default function LogoScreen() {
         >
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            <View style={styles.contentArea}>
+            <SafeAreaView style={styles.contentArea}>
                 
                 {/* Contenido Superior */}
                 <View style={styles.topContent}>
@@ -44,13 +45,11 @@ export default function LogoScreen() {
                 </View>
                 
                 {/* Botón */}
-                <TouchableOpacity
-                    style={styles.primaryButton}
+                <PrimaryButton
+                    title="Empezar"
                     onPress={() => router.push('/main/TutorialScreen')}
-                >
-                    <Text style={styles.buttonText}>Empezar</Text>
-                </TouchableOpacity>
-            </View>
+                />  
+            </SafeAreaView>
         </LinearGradient>
     );
 }
@@ -109,22 +108,5 @@ const styles = StyleSheet.create({
     highlightText: {
         color: "#FEE543",
         fontFamily: 'PoppinsBold',
-    },
-    primaryButton: {
-        width: "100%",
-        paddingVertical: 10,
-        borderRadius: 30,
-        alignItems: "center",
-        backgroundColor: "#DD3282",
-        shadowColor: '#DD3282',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.8,
-        shadowRadius: 15,
-        elevation: 12,
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 18,
-        fontFamily: 'PoppinsBold',
-    },
+    }
 });

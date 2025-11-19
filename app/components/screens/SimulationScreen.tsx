@@ -16,7 +16,7 @@ import {
   View
 } from 'react-native';
 
-export default function MainScreen() {
+export default function SimulationScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
