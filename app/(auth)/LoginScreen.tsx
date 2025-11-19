@@ -51,11 +51,11 @@ export default function LoginScreen() {
             {/* Enlaces */}
             <View style={styles.linksRow}>
               <TouchableOpacity>
-                <Text style={styles.linkUnderlined} onPress={() => router.push("/(auth)/ResetScreen")}>¿Olvidó su contraseña?</Text>
+                <Text style={styles.linkUnderlined} onPress={() => router.push("/ResetScreen")}>¿Olvidó su contraseña?</Text>
               </TouchableOpacity>
 
               <TouchableOpacity>
-                <Text style={styles.linkUnderlinedBlue} onPress={() => router.push("/(auth)/RegisterScreen")}>Registrarse</Text>
+                <Text style={styles.linkUnderlinedBlue} onPress={() => router.push("/RegisterScreen")}>Registrarse</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -87,7 +87,8 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 30,
+    paddingHorizontal: 30,
+    paddingTop: 10,
     alignItems: "center",
     backgroundColor: "#ffffff",
     flexGrow: 1,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   linksRow: {
-    marginTop: 20,
+    marginTop: 18,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 15,
     width: "100%",
   },
   line: {
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 30,
-    marginTop: 15,
+    marginTop: 15
   },
   googleTextDark: {
     fontSize: 16,
