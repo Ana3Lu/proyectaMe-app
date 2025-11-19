@@ -1,5 +1,6 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+
 import { Text } from "react-native";
 
 export default function TabLayout() {
@@ -45,11 +46,7 @@ export default function TabLayout() {
         name="Simulaciones"
         options={{
           tabBarIcon: ({ focused }) => (
-            <MaterialIcons
-              name={focused ? "psychology" : "psychology-alt"}
-              size={26}
-              color={focused ? "#2F32CD" : "#999"}
-            />
+            <FontAwesome5 name="brain" size={26} color={focused ? "#2F32CD" : "#999"} />
           ),
         }}
       />
