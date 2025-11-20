@@ -27,22 +27,23 @@ export default function FeedbackScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.header}
       >
-        <View style={styles.headerRow}>
+        {/* Botón arriba a la izquierda */}
+        <View style={styles.headerButtonContainer}>
             <HeaderButton 
             icon="arrow-back"
-            onPress={() => router.push('/main/(tabs)/SimulacionesScreen')}
+            onPress={() => router.push('/main/(tabs)/SimulationsScreen')}
             />
+        </View>
 
-            <View style={styles.headerContent}>
-                <Text style={styles.headerTitle}>¡Increíble!</Text>
+        {/* Contenido centrado */}
+        <View style={styles.headerContentCentered}>
+            <Text style={styles.headerTitle}>¡Increíble!</Text>
 
-                {/* Icon */}
-                <View style={[styles.iconCircle, { backgroundColor: "#FEE543" }]}>
-                    <FontAwesome5 name="star" size={46} color="#130F40" />
-                </View>
-
-                <Text style={styles.headerSubtitle}>Has completado otra simulación</Text>
+            <View style={[styles.iconCircle, { backgroundColor: "#FEE543" }]}>
+            <FontAwesome5 name="star" size={46} color="#130F40" />
             </View>
+
+            <Text style={styles.headerSubtitle}>Has completado la simulación</Text>
         </View>
       </LinearGradient>
 
@@ -75,19 +76,20 @@ export default function FeedbackScreen() {
 const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
-    paddingHorizontal: 25,
+    paddingHorizontal: 30,
     paddingTop: 50,
     paddingBottom: 40,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerRow: {
-    flexDirection: "row",
+  headerButtonContainer: {
+    width: "100%",
     alignItems: "flex-start",
+    marginBottom: 10,
   },
-  headerContent:{
+  headerContentCentered: {
+    width: "100%",
     alignItems: "center",
-    marginLeft: -12,
   },
   headerTitle: {
     fontSize: 32,

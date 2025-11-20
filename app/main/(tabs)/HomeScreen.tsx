@@ -84,7 +84,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Explora tu futuro</Text>
 
         <View style={styles.featureRow}>
-          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]} onPress={() => router.push("/main/(tabs)/SimulacionesScreen")}>
+          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]} onPress={() => router.push("/main/(tabs)/SimulationsScreen")}>
             <View style={[styles.iconCircleMini, { backgroundColor: "#59B5A2" }]}>
               <FontAwesome5 name="brain" size={25} color="#130F40" />
             </View>

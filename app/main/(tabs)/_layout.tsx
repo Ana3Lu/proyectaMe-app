@@ -35,7 +35,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="SimulacionesScreen"
+        name="SimulationsScreen"
         options={{
           title: "Simulaciones",
           tabBarIcon: ({ focused }) => (

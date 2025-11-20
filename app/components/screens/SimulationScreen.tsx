@@ -1,13 +1,15 @@
 import { ChatBubble } from '@/app/components/ui/ChatBubble';
 import { OptionButton } from '@/app/components/ui/OptionButton';
 import { ProgressBar } from '@/app/components/ui/ProgressBar';
+import { FALLBACK_SIMULATIONS, GENERIC_FALLBACK } from "@/constants/simulationFallbacks";
+import { SIMULATIONS } from "@/constants/simulations";
 import { useSimulation } from '@/contexts/SimulationContext';
 import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView, Platform,
@@ -29,12 +31,12 @@ export default function SimulationScreen() {
   const [results, setResults] = useState<{ skill: string; score: number }[]>([]);
   
   const { saveSimulationResults } = useSimulation();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
-  useEffect(() => {
-    loadSimulation();
-  }, []);
+  const simulation = SIMULATIONS.find(sim => sim.id === id);
+  const topic = simulation?.topicPrompt;
 
-  const loadSimulation = async () => {
+  const loadSimulation = useCallback(async () => {
     // Reiniciar todo antes de cargar
     setIsLoading(true);
     setIsFinished(false);
@@ -42,14 +44,24 @@ export default function SimulationScreen() {
     setSelectedAnswers({});
     setCurrentIndex(0);
     setChatHistory([]);
-    setQuestions([]); // limpiamos también las preguntas
+    setQuestions([]);
 
     const body = {
       "contents": [
         {
           "parts": [
             {
-              text: "Retorna directamente una lista JSON con exactamente 6 decisiones secuenciales para una simulación narrativa tipo chat vocacional de una carrera u oficio. Cada decisión representa un dilema o situación profesional de ese oficio, donde el usuario debe elegir qué haría. La narrativa debe ir en 'question' (como si Robby presentara la situación, pero sin mencionarlo). Cada decisión debe incluir: mínimo 4 opciones posibles ('options'), retroalimentación específica por opción ('feedback'), una puntuación del 1 al 5 ('scores') y una habilidad blanda asociada ('skills'), manteniendo el mismo orden entre arrays. Ejemplo de habilidades: empatía, liderazgo, comunicación, trabajo en equipo, adaptabilidad, creatividad o ética. No incluyas texto extra ni código Markdown — solo el array JSON. Ejemplos de simulaciones: 'Un día como médico', 'Estudio de diseño', 'Desarrollador de apps'."
+              text: `
+                Crea una simulación narrativa basada únicamente en este contexto profesional: "${topic}". 
+                Retorna directamente una lista JSON con exactamente 6 decisiones secuenciales para una simulación 
+                narrativa tipo chat vocacional de una carrera u oficio. Cada decisión representa un dilema o 
+                situación profesional de ese oficio, donde el usuario debe elegir qué haría. 
+                La narrativa debe ir en 'question' (como si Robby presentara la situación, pero sin mencionarlo). 
+                Cada decisión debe incluir: mínimo 4 opciones posibles ('options'), retroalimentación específica por 
+                opción ('feedback'), una puntuación del 1 al 5 ('scores') y una habilidad blanda asociada ('skills': 
+                (ej: Empatía, Liderazgo, Comunicación, Creatividad, Trabajo en equipo, Adaptabilidad o Ética...)), manteniendo el mismo 
+                orden entre arrays. Ejemplo de habilidades: empatía, liderazgo, comunicación, trabajo en equipo, 
+                adaptabilidad, creatividad o ética. No incluyas texto extra ni código Markdown — solo el array JSON.`
             },
           ]
         }
@@ -104,10 +116,32 @@ export default function SimulationScreen() {
       }
     } catch (error) {
       console.error("Error cargando simulación:", error);
+
+      // Fallback profesional o genérico
+      const fallback = FALLBACK_SIMULATIONS[id!] ?? GENERIC_FALLBACK;
+
+      setQuestions(fallback);
+      setChatHistory([
+        { message: "Tu simulación se demoró un poco, preparé una versión alternativa para ti 😊", sender: "robby" },
+        { message: fallback[0].question, sender: "robby" }
+      ]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [topic, id]);
+
+  useEffect(() => {
+    if (!simulation) return;
+    loadSimulation();
+  }, [id, simulation, loadSimulation]);
+
+  if (!simulation) {
+    return (
+      <View style={styles.container}>
+        <Text>Simulación no encontrada</Text>
+      </View>
+    );
+  }
 
   const handleOptionSelect = (optionIndex: number) => {
     if (selectedAnswers[currentIndex] !== undefined) return;
@@ -163,7 +197,7 @@ export default function SimulationScreen() {
         finalPercentages[skill] = Math.round((total / max) * 100);
       });
 
-      saveSimulationResults(finalPercentages);  // Guardar en el contexto
+      saveSimulationResults(finalPercentages);  
 
       setChatHistory(prev => [
         ...prev,
@@ -191,7 +225,7 @@ export default function SimulationScreen() {
       >
         <HeaderButton 
           icon="close"
-          onPress={() => router.push('/main/(tabs)/SimulacionesScreen')}
+          onPress={() => router.push('/main/(tabs)/SimulationsScreen')}
         />
 
         <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
@@ -274,6 +308,11 @@ export default function SimulationScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   topBar: {
     paddingHorizontal: 30,
     paddingVertical: 16,

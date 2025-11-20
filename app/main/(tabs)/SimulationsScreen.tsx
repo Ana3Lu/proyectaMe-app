@@ -1,16 +1,17 @@
 import HeaderButton from "@/app/components/ui/HeaderButton";
+import { SIMULATIONS } from "@/constants/simulations";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function SimulacionesScreen() {
+export default function SimulationsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
 
-        {/* HEADER */}
+        {/* Header */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
             <HeaderButton 
@@ -26,7 +27,7 @@ export default function SimulacionesScreen() {
             </View>
           </View>
 
-          {/* FILTROS - SCROLL HORIZONTAL */}
+          {/* Filtros - Scroll Horizontal */}
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -44,53 +45,13 @@ export default function SimulacionesScreen() {
         </LinearGradient>
 
 
-        {/* --- LISTA DE SIMULACIONES --- */}
+        {/* Lista de simulaciones */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
-
-          {/* CARD TEMPLATE (Se repite) */}
-          {[
-            {
-              title: "Día como Médico",
-              desc: "Experimenta las decisiones diarias de un profesional de la salud en urgencias",
-              color: "#6FD8C6",
-              category: "Salud",
-              time: "5–7 min",
-              users: "2.341",
-              stars: "4.2",
-            },
-            {
-              title: "Laboratorio de Investigación",
-              desc: "Descubre el mundo de la investigación médica y científica",
-              color: "#6FD8C6",
-              category: "Salud",
-              time: "6–8 min",
-              users: "1.586",
-              stars: "4.6",
-            },
-            {
-              title: "Estudio de Diseño",
-              desc: "Crea un proyecto visual desde el concepto hasta la ejecución",
-              color: "#8FB7FF",
-              category: "Creatividad",
-              time: "7–9 min",
-              users: "3.798",
-              stars: "4.9",
-            },
-            {
-              title: "Producción musical",
-              desc: "Explora el proceso creativo de producir una canción",
-              color: "#8FB7FF",
-              category: "Creatividad",
-              time: "6–8 min",
-              users: "1.020",
-              stars: "4.7",
-            },
-          ].map((item, idx) => (
-            <View key={idx} style={[styles.card, { borderColor: item.color }]}>
-
+          {SIMULATIONS.map((item) => (
+            <View key={item.id} style={[styles.card, { borderColor: item.color }]}>
+              
               <View style={styles.cardHeaderRow}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
-
                 <View style={[styles.categoryTag, { backgroundColor: item.color }]}>
                   <Text style={styles.categoryText}>{item.category}</Text>
                 </View>
@@ -98,7 +59,6 @@ export default function SimulacionesScreen() {
 
               <Text style={styles.cardDesc}>{item.desc}</Text>
 
-              {/* INFO WRAPS ON SMALL SCREENS */}
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
                   <MaterialIcons name="access-time" size={18} color="#130F40" />
@@ -118,7 +78,10 @@ export default function SimulacionesScreen() {
 
               <TouchableOpacity 
                 style={styles.startButton}
-                onPress={() => router.push("/components/screens/SimulationScreen")}
+                onPress={() => router.push({
+                  pathname: "/components/screens/SimulationScreen",
+                  params: { id: item.id }
+                })}
               >
                 <Text style={styles.startButtonText}>Comenzar</Text>
               </TouchableOpacity>
