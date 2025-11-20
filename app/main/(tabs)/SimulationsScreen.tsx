@@ -1,12 +1,22 @@
+import FilterChip from "@/app/components/ui/FilterChip";
 import HeaderButton from "@/app/components/ui/HeaderButton";
 import { SIMULATIONS } from "@/constants/simulations";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SimulationsScreen() {
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
+  const categories = ["Todas", "Salud", "Creatividad", "Tecnología", "Negocios", "Ciencia"];
+
+  const filtered = selectedCategory === "Todas"
+    ? SIMULATIONS
+    : SIMULATIONS.filter(sim => sim.category === selectedCategory);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -34,22 +44,24 @@ export default function SimulationsScreen() {
             style={{ marginTop: 18 }}
           >
             <View style={styles.filterRow}>
-              <Text style={[styles.filterChip, styles.filterChipActive]}>Todas</Text>
-              <Text style={styles.filterChip}>Salud</Text>
-              <Text style={styles.filterChip}>Creatividad</Text>
-              <Text style={styles.filterChip}>Tecnología</Text>
-              <Text style={styles.filterChip}>Negocios</Text>
-              <Text style={styles.filterChip}>Ciencia</Text>
+              {categories.map(cat => (
+                <FilterChip 
+                  key={cat}
+                  label={cat}
+                  active={selectedCategory === cat}
+                  onPress={() => setSelectedCategory(cat)}
+                />
+              ))}
             </View>
           </ScrollView>
         </LinearGradient>
 
 
-        {/* Lista de simulaciones */}
+        {/* Lista de simulaciones filtradas */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
-          {SIMULATIONS.map((item) => (
+          {filtered.map(item => (
             <View key={item.id} style={[styles.card, { borderColor: item.color }]}>
-              
+
               <View style={styles.cardHeaderRow}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <View style={[styles.categoryTag, { backgroundColor: item.color }]}>
@@ -85,9 +97,9 @@ export default function SimulationsScreen() {
               >
                 <Text style={styles.startButtonText}>Comenzar</Text>
               </TouchableOpacity>
+
             </View>
           ))}
-
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -159,7 +171,7 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     color: "#130F40",
     flexShrink: 1,
-    maxWidth: "70%",
+    maxWidth: "60%",
     flexWrap: "wrap",
   },
   categoryTag: {
