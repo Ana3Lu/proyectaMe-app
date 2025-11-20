@@ -1,9 +1,9 @@
+import HeaderButton from "@/app/components/ui/HeaderButton";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 export default function SimulacionesScreen() {
   return (
@@ -13,12 +13,10 @@ export default function SimulacionesScreen() {
         {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
-            <TouchableOpacity 
-              style={styles.backButton}
+            <HeaderButton 
+              icon="arrow-back" 
               onPress={() => router.back()}
-            >
-              <Ionicons name="arrow-back" size={28} color="#fff" />
-            </TouchableOpacity>
+            />
 
             <View style={{ flexShrink: 1 }}>
               <Text style={styles.headerTitle}>Simulaciones</Text>
@@ -142,10 +140,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  backButton: {
-    marginRight: 15,
-    padding: 5,
-  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -159,7 +153,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#fff",
     opacity: 0.9,
-    marginTop: 4,
     fontFamily: "PoppinsRegular",
     flexWrap: "wrap",
     maxWidth: "85%",

@@ -84,7 +84,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Explora tu futuro</Text>
 
         <View style={styles.featureRow}>
-          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]}>
+          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]} onPress={() => router.push("/main/(tabs)/SimulacionesScreen")}>
             <View style={[styles.iconCircleMini, { backgroundColor: "#59B5A2" }]}>
               <FontAwesome5 name="brain" size={25} color="#130F40" />
             </View>
@@ -226,17 +226,21 @@ const styles = StyleSheet.create({
   },
   statTextBlock: {
     marginLeft: 8,
-    justifyContent: "center",
     alignItems: "center",
+    textAlign: "center",
+    justifyContent: "center",
+    paddingBottom: 8,
   },
   statNumber: {
     fontSize: 32,
     fontFamily: "PoppinsBold",
     color: "#130F40",
+    paddingTop: 4,
   },
   statLabel: {
     fontSize: 16,
     fontWeight: "bold",
+    marginTop: -9,
   },
   iconCircle: {
     width: 40,

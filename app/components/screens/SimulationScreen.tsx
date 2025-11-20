@@ -1,6 +1,7 @@
 import { ChatBubble } from '@/app/components/ui/ChatBubble';
 import { OptionButton } from '@/app/components/ui/OptionButton';
 import { ProgressBar } from '@/app/components/ui/ProgressBar';
+import { useSimulation } from '@/contexts/SimulationContext';
 import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import HeaderButton from '../ui/HeaderButton';
 
 export default function SimulationScreen() {
   const [questions, setQuestions] = useState<SimulationQuestion[]>([]);
@@ -25,6 +27,8 @@ export default function SimulationScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [results, setResults] = useState<{ skill: string; score: number }[]>([]);
+  
+  const { saveSimulationResults } = useSimulation();
 
   useEffect(() => {
     loadSimulation();
@@ -140,24 +144,31 @@ export default function SimulationScreen() {
         { message: questions[nextIndex].question, sender: "robby" }
       ]);
     } else if (!isFinished) {
+
+      // Sumar puntajes y contar apariciones por skill
       const skillTotals: Record<string, number> = {};
+      const skillCounts: Record<string, number> = {};
+
       results.forEach(r => {
         skillTotals[r.skill] = (skillTotals[r.skill] || 0) + r.score;
+        skillCounts[r.skill] = (skillCounts[r.skill] || 0) + 1;
       });
 
-      const sorted = Object.entries(skillTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
+      // Convertirlos a porcentajes
+      const finalPercentages: Record<string, number> = {};
 
-      const topSkills = sorted
-        .map(([skill, score]) => `**${skill}** (${score})`)
-        .join(", ");
+      Object.entries(skillTotals).forEach(([skill, total]) => {
+        const count = skillCounts[skill];
+        const max = count * 5; // máximo posible
+        finalPercentages[skill] = Math.round((total / max) * 100);
+      });
+
+      saveSimulationResults(finalPercentages);  // Guardar en el contexto
 
       setChatHistory(prev => [
         ...prev,
         { message: "¡Simulación finalizada! 🎉", sender: "robby" },
-        { message: `Tus principales fortalezas fueron: ${topSkills}`, sender: "robby" },
-        { message: "Revisa tu perfil para ver tu rendimiento y más recomendaciones. 📊", sender: "robby" }
+        { message: "Revisa tu perfil para ver tu rendimiento. 📊", sender: "robby" }
       ]);
 
       setIsFinished(true);
@@ -178,9 +189,10 @@ export default function SimulationScreen() {
         end={{ x: 1, y: 0 }}
         style={styles.topBar}
       >
-        <TouchableOpacity style={styles.closeButton} onPress={goBack => router.back()}>
-          <Ionicons name="close" size={32} color="white" />
-        </TouchableOpacity>
+        <HeaderButton 
+          icon="close"
+          onPress={() => router.push('/main/(tabs)/SimulacionesScreen')}
+        />
 
         <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
           <Text style={styles.topBarText}>
@@ -265,18 +277,13 @@ const styles = StyleSheet.create({
   topBar: {
     paddingHorizontal: 30,
     paddingVertical: 16,
-    paddingTop: 40,
+    paddingTop: 45,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  closeButton: {
-    backgroundColor: '#2F32CD',
-    borderRadius: 15,
-    padding: 4, 
-  },
-  topBarText: { color: 'white', fontWeight: '600', fontSize: 16, paddingLeft: 10 },
+  topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
   contentContainer: { padding: 16, paddingBottom: 100 },
   loadingContainer: { justifyContent: 'center', alignItems: 'center', marginTop: 50 },
   nextButton: {

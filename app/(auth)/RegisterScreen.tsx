@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import {
     ScrollView,
@@ -10,6 +9,7 @@ import {
     View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import HeaderButton from "../components/ui/HeaderButton";
 import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function RegisterScreen() {
@@ -18,11 +18,13 @@ export default function RegisterScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
         {/* Back Button */}
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={26} color="#2F32CD" />
+        <TouchableOpacity>
+            <HeaderButton 
+                icon="arrow-back" 
+                color="#2F32CD"
+                backgroundColor="transparent" 
+                onPress={() => router.back()}
+            />
         </TouchableOpacity>
 
         <View style={styles.container}>
@@ -83,10 +85,6 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    paddingLeft: 20,
-    paddingTop: 20,
-  },
   container: {
     paddingHorizontal: 30,
     paddingBottom: 40,
