@@ -1,4 +1,5 @@
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
+import { SIMULATIONS } from "@/constants/simulations";
 import { FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -13,135 +14,139 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 export default function HomeScreen() {
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>      
-      <ScrollView showsVerticalScrollIndicator={false}>
 
-        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+    const recommended = SIMULATIONS[0];
 
-        {/* Encabezado */}
-        <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
-        <View style={styles.headerContent}>
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>      
+            <ScrollView showsVerticalScrollIndicator={false}>
 
-            {/* Textos */}
-            <View>
-            <Text style={styles.headerTitle}>¡Hola,</Text>
-            <Text style={styles.headerTitle}>Explorador!</Text>
-            <Text style={styles.headerSubtitle}>
-                Listo para descubrir más sobre ti
-            </Text>
+                <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+
+                {/* Encabezado */}
+                <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
+                <View style={styles.headerContent}>
+
+                    {/* Textos */}
+                    <View>
+                    <Text style={styles.headerTitle}>¡Hola,</Text>
+                    <Text style={styles.headerTitle}>Explorador!</Text>
+                    <Text style={styles.headerSubtitle}>
+                        Listo para descubrir más sobre ti
+                    </Text>
+                    </View>
+
+                    {/* Robby */}
+                    <TouchableOpacity
+                    style={styles.robbyWrapper}
+                    activeOpacity={0.8}
+                    onPress={() => router.push("/components/screens/ChatScreen")}
+                    >
+                    <View style={styles.robbyCircle} />
+
+                    <View style={styles.clickWrapper}>
+                        <Text style={styles.clickMessage}>
+                        ¡Hazme <Text style={{ color: "#85E0CD", fontSize: 20 }}>CLIC</Text> para hablar!
+                        </Text>
+                    </View>
+                        
+                    <Image
+                        source={require("../../../assets/images/robby.png")}
+                        style={styles.robbyImage}
+                    />
+                    </TouchableOpacity>
+
+                </View>  
+                </LinearGradient>
+
+                {/* Bloque de estadísticas */}
+                <View style={styles.statsBlock}>
+                <View style={styles.statsInner}>
+                    
+                    <View style={styles.statItem}>
+                    <MaterialIcons name="emoji-events" size={65} color="#59B5A2" />
+                    <View style={styles.statTextBlock}>
+                        <Text style={styles.statNumber}>230</Text>
+                        <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
+                    </View>
+                    </View>
+
+                    <View style={styles.statItem}>
+                    <FontAwesome name="bullseye" size={65} color="#7794F5" />
+                    <View style={styles.statTextBlock}>
+                        <Text style={styles.statNumber}>2</Text>
+                        <Text style={[styles.statLabel, { color: "#7794F5" }]}>Afinidades</Text>
+                    </View>
+                    </View>
+
+                </View>
+                </View>
+
+                {/* Explora tu futuro */}
+                <Text style={styles.sectionTitle}>Explora tu futuro</Text>
+
+                <View style={styles.featureRow}>
+                <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]} onPress={() => router.push("/main/(tabs)/SimulationsScreen")}>
+                    <View style={[styles.iconCircleMini, { backgroundColor: "#59B5A2" }]}>
+                    <FontAwesome5 name="brain" size={25} color="#130F40" />
+                    </View>
+                    <Text style={styles.featureTitle}>Simulaciones</Text>
+                    <Text style={styles.featureDesc}>Experiencias interactivas</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#FFE45E" }]}>
+                    <View style={[styles.iconCircleMini, { backgroundColor: "#E8D551" }]}>
+                    <MaterialIcons name="map" size={30} color="#130F40" />
+                    </View>
+                    <Text style={styles.featureTitle}>Mapa Vocacional</Text>
+                    <Text style={styles.featureDesc}>Tu universo de carreras</Text>
+                </TouchableOpacity>
+                </View>
+
+                {/* Comunidad */}
+                <TouchableOpacity style={styles.communityCard}>
+                <View style={[styles.iconCircleMini, { backgroundColor: "#8E9099" }]}>
+                    <MaterialIcons name="forum" size={30} color="#130F40" />
+                </View>
+                <View style={{ marginLeft: 12 }}>
+                    <Text style={styles.communityTitle}>Comunidad</Text>
+                    <Text style={styles.communityDesc}>Comparte y aprende</Text>
+                </View>
+                </TouchableOpacity>
+
+                {/* Recomendaciones dinámicas */}
+                <Text style={styles.sectionTitle}>Recomendado para ti</Text>
+
+                <View style={styles.recommendedCard}>
+                <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
+                    <View style={[styles.iconCircleMini, { backgroundColor: "#85E0CD" }]}>
+                        <FontAwesome5 name="brain" size={25} color="#130F40" />
+                    </View>
+
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={styles.recTitle}>{recommended.title}</Text>
+                        <Text style={styles.recDesc}>{recommended.desc}</Text>
+                    </View>
+                </View>
+
+                {/* Botón */}
+                <View style={styles.buttonRow}>
+                    <PrimaryButton 
+                    title="Probar ya"
+                    fontSize={14}
+                    onPress={() =>
+                        router.push({
+                        pathname: "/components/screens/SimulationScreen",
+                        params: { id: recommended.id }
+                        })
+                    }
+                    />
+                </View>
             </View>
-
-            {/* Robby */}
-            <TouchableOpacity
-            style={styles.robbyWrapper}
-            activeOpacity={0.8}
-            onPress={() => router.push("/components/screens/ChatScreen")}
-            >
-            <View style={styles.robbyCircle} />
-
-            <View style={styles.clickWrapper}>
-                <Text style={styles.clickMessage}>
-                ¡Hazme <Text style={{ color: "#85E0CD", fontSize: 20 }}>CLIC</Text> para hablar!
-                </Text>
-            </View>
-                
-            <Image
-                source={require("../../../assets/images/robby.png")}
-                style={styles.robbyImage}
-            />
-            </TouchableOpacity>
-
-        </View>  
-        </LinearGradient>
-
-        {/* Bloque de estadísticas */}
-        <View style={styles.statsBlock}>
-          <View style={styles.statsInner}>
-            
-            <View style={styles.statItem}>
-              <MaterialIcons name="emoji-events" size={65} color="#59B5A2" />
-              <View style={styles.statTextBlock}>
-                <Text style={styles.statNumber}>230</Text>
-                <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
-              </View>
-            </View>
-
-            <View style={styles.statItem}>
-              <FontAwesome name="bullseye" size={65} color="#7794F5" />
-              <View style={styles.statTextBlock}>
-                <Text style={styles.statNumber}>2</Text>
-                <Text style={[styles.statLabel, { color: "#7794F5" }]}>Afinidades</Text>
-              </View>
-            </View>
-
-          </View>
-        </View>
-
-        {/* Explora tu futuro */}
-        <Text style={styles.sectionTitle}>Explora tu futuro</Text>
-
-        <View style={styles.featureRow}>
-          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#7ED2C4" }]} onPress={() => router.push("/main/(tabs)/SimulationsScreen")}>
-            <View style={[styles.iconCircleMini, { backgroundColor: "#59B5A2" }]}>
-              <FontAwesome5 name="brain" size={25} color="#130F40" />
-            </View>
-            <Text style={styles.featureTitle}>Simulaciones</Text>
-            <Text style={styles.featureDesc}>Experiencias interactivas</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#FFE45E" }]}>
-            <View style={[styles.iconCircleMini, { backgroundColor: "#E8D551" }]}>
-              <MaterialIcons name="map" size={30} color="#130F40" />
-            </View>
-            <Text style={styles.featureTitle}>Mapa Vocacional</Text>
-            <Text style={styles.featureDesc}>Tu universo de carreras</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Comunidad */}
-        <TouchableOpacity style={styles.communityCard}>
-          <View style={[styles.iconCircleMini, { backgroundColor: "#8E9099" }]}>
-            <MaterialIcons name="forum" size={30} color="#130F40" />
-          </View>
-          <View style={{ marginLeft: 12 }}>
-            <Text style={styles.communityTitle}>Comunidad</Text>
-            <Text style={styles.communityDesc}>Comparte y aprende</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Recomendaciones */}
-        <Text style={styles.sectionTitle}>Recomendado para ti</Text>
-
-        <View style={styles.recommendedCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
-            <View style={[styles.iconCircleMini, { backgroundColor: "#85E0CD" }]}>
-                <FontAwesome5 name="brain" size={25} color="#130F40" />
-            </View>
-
-            <View style={{ marginLeft: 12, flex: 1 }}>
-                <Text style={styles.recTitle}>Simulación: Día como Médico</Text>
-                <Text style={styles.recDesc}>
-                    Experimenta las decisiones de un profesional real
-                </Text>
-            </View>
-          </View>
-
-          {/* Botón */}
-          <View style={styles.buttonRow}>
-                <PrimaryButton 
-                title="Probar ya"
-                fontSize={14}
-                onPress={() => router.push("/components/screens/SimulationScreen")}
-                />
-            </View>
-        </View>
-
-      </ScrollView>
+        </ScrollView>
     </SafeAreaView>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
