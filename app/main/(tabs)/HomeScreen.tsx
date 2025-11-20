@@ -339,6 +339,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 2,
     borderColor: "#CFF6EB",
+    marginBottom: 30,
   },
   recTitle: {
     fontFamily: "PoppinsBold",

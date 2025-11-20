@@ -20,8 +20,6 @@ export default function SimulationsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* Header */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
@@ -57,7 +55,7 @@ export default function SimulationsScreen() {
           </ScrollView>
         </LinearGradient>
 
-
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Lista de simulaciones filtradas */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13 }}>
           {filtered.map(item => (
@@ -112,7 +110,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 25,
     paddingTop: 45,
-    paddingBottom: 30,
+    paddingBottom: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
