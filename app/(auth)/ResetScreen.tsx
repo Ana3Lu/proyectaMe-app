@@ -1,13 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HeaderButton from "../components/ui/HeaderButton";
@@ -19,7 +19,7 @@ export default function ResetScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         
         {/* Back Button */}
-        <TouchableOpacity>
+        <TouchableOpacity style={styles.headerBack}>
             <HeaderButton 
                 icon="arrow-back" 
                 color="#2F32CD"
@@ -85,6 +85,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  headerBack: {
+    marginTop: 10,
+    marginLeft: 10,
+    alignSelf: "flex-start",
   },
   icon: {
     width: 90,

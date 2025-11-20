@@ -6,10 +6,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SimulationsScreen() {
 
+  const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
   const categories = ["Todas", "Salud", "Creatividad", "Tecnología", "Negocios", "Ciencia"];
 
@@ -18,7 +19,7 @@ export default function SimulationsScreen() {
     : SIMULATIONS.filter(sim => sim.category === selectedCategory);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Header */}
@@ -102,7 +103,7 @@ export default function SimulationsScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

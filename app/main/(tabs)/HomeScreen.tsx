@@ -4,23 +4,24 @@ import { FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
 
     const recommended = SIMULATIONS[0];
+    const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>      
-            <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
+          <ScrollView showsVerticalScrollIndicator={false}>
 
                 <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
@@ -145,7 +146,7 @@ export default function HomeScreen() {
                 </View>
             </View>
         </ScrollView>
-    </SafeAreaView>
+      </View>
     );
 }
 
