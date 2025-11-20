@@ -91,7 +91,7 @@ export default function SimulationsScreen() {
               <TouchableOpacity 
                 style={styles.startButton}
                 onPress={() => router.push({
-                  pathname: "/components/screens/SimulationScreen",
+                  pathname: "../../simulations/[id]",
                   params: { id: item.id }
                 })}
               >
@@ -132,27 +132,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     maxWidth: "85%",
   },
-
-  /* SCROLL HORIZONTAL */
   filterRow: {
     flexDirection: "row",
   },
-  filterChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    backgroundColor: "rgba(255,255,255,0.3)",
-    borderRadius: 20,
-    marginRight: 10,
-    color: "#fff",
-    fontFamily: "PoppinsRegular",
-  },
-  filterChipActive: {
-    backgroundColor: "#fff",
-    color: "#2F32CD",
-    fontFamily: "PoppinsBold",
-  },
-
-  /* CARDS */
   card: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -191,8 +173,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     fontSize: 16,
   },
-
-  /* INFO ROW WRAPS */
   infoRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -210,7 +190,6 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsRegular",
     fontSize: 14,
   },
-
   startButton: {
     alignSelf: "flex-end",
     backgroundColor: "#DD3282",

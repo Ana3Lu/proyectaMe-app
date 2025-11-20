@@ -21,8 +21,9 @@ export default function FilterChip({ label, active, onPress }: FilterChipProps) 
 
 const styles = StyleSheet.create({
   chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingVertical: 4,
+    paddingTop: 6,
+    paddingHorizontal: 10,
     backgroundColor: "rgba(255,255,255,0.3)",
     borderRadius: 20,
     marginRight: 10,
