@@ -13,7 +13,7 @@ export interface SimulationMeta {
 export const SIMULATIONS: SimulationMeta[] = [
   {
     id: "medico",
-    title: "Día como Médico",
+    title: "Médico",
     desc: "Experimenta las decisiones diarias de un profesional de la salud en urgencias.",
     category: "Salud",
     color: "#6FD8C6",
@@ -24,7 +24,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "laboratorio",
-    title: "Laboratorio de Investigación",
+    title: "Investigador de Laboratorio",
     desc: "Descubre el mundo de la investigación médica y científica",
     category: "Salud",
     color: "#6FD8C6",
@@ -35,7 +35,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "enfermeria",
-    title: "Rol de Enfermería",
+    title: "Enfermero",
     desc: "Vive un día en la vida de un enfermero en un hospital ocupado.",
     category: "Salud",
     color: "#6FD8C6",
@@ -46,7 +46,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "diseno",
-    title: "Estudio de Diseño",
+    title: "Diseñador Gráfico",
     desc: "Crea un proyecto visual desde el concepto hasta la ejecución.",
     category: "Creatividad",
     color: "#8FB7FF",
@@ -57,7 +57,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "musica",
-    title: "Producción musical",
+    title: "Productor Musical",
     desc: "Explora el proceso creativo de producir una canción.",
     category: "Creatividad",
     color: "#8FB7FF",
@@ -68,7 +68,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "carpintero",
-    title: "Taller de Carpintería",
+    title: "Carpintero",
     desc: "Construye muebles y aprende técnicas de carpintería.",
     category: "Creatividad",
     color: "#8FB7FF",
@@ -79,7 +79,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "fotografo",
-    title: "Sesión de Fotografía",
+    title: "Fotógrafo",
     desc: "Dirige una sesión fotográfica desde la planificación hasta la edición.",
     category: "Creatividad",
     color: "#8FB7FF",
@@ -90,7 +90,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "dev",
-    title: "Desarrollador de Apps",
+    title: "Desarrollador de Software",
     desc: "Toma decisiones técnicas y creativas en un proyecto digital.",
     category: "Tecnología",
     color: "#BD9D1E",
@@ -123,7 +123,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "emprendedor",
-    title: "Lanzamiento de Startup",
+    title: "Emprendedor",
     desc: "Navega los desafíos de iniciar y hacer crecer un negocio.",
     category: "Negocios",
     color: "#FF7F50",
@@ -134,7 +134,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "ventas",
-    title: "Estrategias de Ventas",
+    title: "Especialista en Ventas",
     desc: "Desarrolla tácticas para cerrar tratos y satisfacer clientes.",
     category: "Negocios",
     color: "#FF7F50",  
@@ -145,7 +145,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "astronomo",
-    title: "Observatorio Astronómico",
+    title: "Astrónomo",
     desc: "Explora el universo y toma decisiones en investigaciones astronómicas.",
     category: "Ciencia",
     color: "#dda0c7ff",
@@ -156,7 +156,7 @@ export const SIMULATIONS: SimulationMeta[] = [
   },
   {
     id: "biologo",
-    title: "Campo de Biología",
+    title: "Biólogo",
     desc: "Realiza investigaciones y toma decisiones en estudios de campo.",
     category: "Ciencia",
     color: "#dda0c7ff",

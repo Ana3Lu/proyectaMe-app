@@ -1,5 +1,6 @@
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SimulationProvider } from '@/contexts/SimulationContext';
+import { VocationalProvider } from '@/contexts/VocationalContext';
 import { Poppins_400Regular, Poppins_700Bold, useFonts } from "@expo-google-fonts/poppins";
 import * as Notifications from 'expo-notifications';
 import { Stack } from 'expo-router';
@@ -50,11 +51,13 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <SimulationProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-        </Stack>
-      </SimulationProvider>
+      <VocationalProvider>
+        <SimulationProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+          </Stack>
+        </SimulationProvider>
+      </VocationalProvider>
     </AuthProvider>
   )
 }

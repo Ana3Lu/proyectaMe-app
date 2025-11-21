@@ -96,7 +96,7 @@ export default function HomeScreen() {
                     <Text style={styles.featureDesc}>Experiencias interactivas</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#FFE45E" }]}>
+                <TouchableOpacity style={[styles.featureCard, { backgroundColor: "#FFE45E" }]} onPress={() => router.push("/main/(tabs)/MapScreen")}>
                     <View style={[styles.iconCircleMini, { backgroundColor: "#E8D551" }]}>
                     <MaterialIcons name="map" size={30} color="#130F40" />
                     </View>

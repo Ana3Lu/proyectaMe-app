@@ -4,6 +4,7 @@ import { ProgressBar } from '@/app/components/ui/ProgressBar';
 import { FALLBACK_SIMULATIONS, GENERIC_FALLBACK } from "@/constants/simulationFallbacks";
 import { SIMULATIONS } from "@/constants/simulations";
 import { useSimulation } from '@/contexts/SimulationContext';
+import { useVocational } from '@/contexts/VocationalContext';
 import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +32,7 @@ export default function SimulationScreen() {
   const [results, setResults] = useState<{ skill: string; score: number }[]>([]);
   
   const { saveSimulationResults } = useSimulation();
+  const { markSimulationCompleted } = useVocational();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const simulation = SIMULATIONS.find(sim => sim.id === id);
@@ -197,7 +199,8 @@ export default function SimulationScreen() {
         finalPercentages[skill] = Math.round((total / max) * 100);
       });
 
-      saveSimulationResults(finalPercentages);  
+      saveSimulationResults(id!, finalPercentages);  
+      markSimulationCompleted(id!);
 
       setChatHistory(prev => [
         ...prev,
