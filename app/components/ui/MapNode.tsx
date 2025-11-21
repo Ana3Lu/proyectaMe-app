@@ -1,43 +1,54 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
-export default function MapNode({ node, categoryColor }: any) {
-  const colors = node.unlocked
-    ? categoryColor(node.category)
-    : ["#D9D9D9", "#A6A6A6"];
+export default function MapNode({ node, categoryColor, onPress }: any) {
+  const isFuture = node.futureLocked === true;
+  const isCompleted = node.unlocked && node.affinity === 100;
+  const isPlayable = !isFuture && !isCompleted;
+
+  // Colores según estado
+  const colors = isFuture
+    ? ["#D9D9D9", "#A6A6A6"]
+    : categoryColor(node.category);
 
   return (
-    <View style={{ alignItems: "center" }}>
-      {/* Glow */}
-      {node.unlocked && (
+    <TouchableOpacity
+      disabled={isFuture}
+      onPress={onPress}
+      style={{ alignItems: "center" }}
+    >
+      {(isPlayable || isCompleted) && (
         <LinearGradient colors={colors} style={styles.glow} />
       )}
 
-      {/* Circle */}
       <LinearGradient colors={colors} style={styles.nodeCircle}>
-        {node.unlocked ? (
+        {isFuture ? (
+          <MaterialIcons name="lock" size={30} color="#555" />
+        ) : isCompleted ? (
+          <MaterialIcons name="check-circle" size={32} color="#fff" />
+        ) : (
           <>
             <Text style={styles.star}>✨</Text>
             <Text style={styles.affinity}>{node.affinity}%</Text>
           </>
-        ) : (
-          <MaterialIcons name="lock" size={28} color="#555" />
         )}
       </LinearGradient>
 
-      {/* Label */}
       <Text
         style={[
           styles.nodeLabel,
-          { backgroundColor: categoryColor(node.category)[1] },
+          {
+            backgroundColor: isFuture ? "#A6A6A6" : colors[1],
+          },
         ]}
       >
-        {node.name}
+        {isFuture ? `${node.name} (Futuro)` : node.name}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 }
+
 
 const styles = StyleSheet.create({
   glow: {
@@ -61,11 +72,11 @@ const styles = StyleSheet.create({
   affinity: {
     color: "#fff",
     fontFamily: "PoppinsBold",
-    fontSize: 14,
+    fontSize: 18,
   },
   nodeLabel: {
     marginTop: -10,
-    fontWeight: "500",
+    fontWeight: "bold",
     color: "#fff",
     textAlign: "center",
     maxWidth: 100,
@@ -75,4 +86,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 10,
   },
+  futureLabel: {
+    fontSize: 10,
+    color: "#555",
+    marginTop: 2,
+    fontFamily: "PoppinsMedium",
+    },
 });

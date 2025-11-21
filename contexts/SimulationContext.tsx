@@ -1,9 +1,8 @@
-import { SIMULATIONS } from "@/constants/simulations";
 import { useVocational } from "@/contexts/VocationalContext";
 import { createContext, useContext, useState } from "react";
 
 interface SimulationSummary {
-  skills: Record<string, number>; 
+  skills: Record<string, number>;
   lastSimulation: string | null;
 }
 
@@ -22,36 +21,26 @@ const SimulationContext = createContext<SimulationContextProps>({
 export const SimulationProvider = ({ children }: any) => {
   const [summary, setSummary] = useState<SimulationSummary | null>(null);
 
-  const { updateAffinity, unlockCareer, careers } = useVocational();
+  const { updateCareerAffinity } = useVocational();
+  const { markSimulationCompleted } = useVocational();
 
   const saveSimulationResults = (simulationId: string, skills: Record<string, number>) => {
-    
-    // Guardar para la pantalla de Feedback
     setSummary({
       skills,
       lastSimulation: simulationId
     });
 
-    const sim = SIMULATIONS.find(s => s.id === simulationId);
-    if (!sim) return;
-
-    const category = sim.category;
-
-    // Convertimos skills a un puntaje total promedio
+    // Calcular promedio para puntuación de la carrera
     const totalScore = Math.round(
-      Object.values(skills).reduce((a, b) => a + b, 0) / Object.keys(skills).length
+      Object.values(skills).reduce((a, b) => a + b, 0) /
+      Object.keys(skills).length
     );
 
-    // Sumamos afinidad a la categoría
-    updateAffinity(category, totalScore);
+    // Asigna SOLO a esa carrera
+    updateCareerAffinity(simulationId, totalScore);
 
-    // Ver si se desbloquea esta carrera
-    const career = careers.find(c => c.id === simulationId);
-    if (!career) return;
-
-    if (career.affinity + totalScore >= 60) {
-      unlockCareer(simulationId);
-    }
+    // Marca simulación hecha
+    markSimulationCompleted(simulationId);
   };
 
   const resetSimulation = () => setSummary(null);

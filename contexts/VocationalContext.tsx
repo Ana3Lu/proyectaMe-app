@@ -15,34 +15,23 @@ export interface CareerNode {
   id: string;
   name: string;
   category: string;
-  affinity: number;
-  unlocked: boolean;
+  affinity: number; 
   x: number;
   y: number;
 }
 
-const INITIAL_CAREERS: CareerNode[] = SIMULATIONS.map(sim => ({
-  id: sim.id,
-  name: sim.title,
-  category: sim.category,
-  affinity: 0,
-  unlocked: false,
-  x: CONSTELLATION_POSITIONS[SIMULATIONS.indexOf(sim) % CONSTELLATION_POSITIONS.length].x,
-  y: CONSTELLATION_POSITIONS[SIMULATIONS.indexOf(sim) % CONSTELLATION_POSITIONS.length].y,
-}));
-
 interface VocationalContextProps {
   careers: CareerNode[];
-  updateAffinity: (category: string, score: number) => void;
-  unlockCareer: (id: string) => void;
+  updateCareerAffinity: (id: string, score: number) => void;
 
-  // 👇 LO NUEVO
   completedSimulations: string[];
   markSimulationCompleted: (id: string) => void;
 
+  userLevel: number;
+  levelUp: () => void;
+
   stats: {
-    unlocked: number;
-    inProgress: number;
+    completed: number;
     total: number;
   };
 }
@@ -50,45 +39,50 @@ interface VocationalContextProps {
 const VocationalContext = createContext<VocationalContextProps | null>(null);
 
 export const VocationalProvider = ({ children }: { children: ReactNode }) => {
-  const [careers, setCareers] = useState<CareerNode[]>(INITIAL_CAREERS);
+  const [careers, setCareers] = useState<CareerNode[]>(
+    SIMULATIONS.map((sim, index) => ({
+      id: sim.id,
+      name: sim.title,
+      category: sim.category,
+      affinity: 0,
+      x: CONSTELLATION_POSITIONS[index % CONSTELLATION_POSITIONS.length].x,
+      y: CONSTELLATION_POSITIONS[index % CONSTELLATION_POSITIONS.length].y,
+    }))
+  );
 
-  // 👇 NUEVO
   const [completedSimulations, setCompletedSimulations] = useState<string[]>([]);
+  const [userLevel, setUserLevel] = useState(1);
+
+  const MAX_LEVEL = 4;
+
+  const levelUp = () => {
+    setUserLevel(prev => Math.min(prev + 1, MAX_LEVEL));
+  };
 
   function markSimulationCompleted(id: string) {
-    setCompletedSimulations(prev =>
-      prev.includes(id) ? prev : [...prev, id]
-    );
+    setCompletedSimulations(prev => {
+      if (prev.includes(id)) return prev;
 
-    // 🔓 desbloquear carrera en el mapa automáticamente
-    setCareers(prev =>
-      prev.map(c =>
-        c.id === id ? { ...c, unlocked: true } : c
-      )
-    );
+      const updated = [...prev, id];
+
+      if (updated.length % 3 === 0) levelUp();
+
+      return updated;
+    });
   }
 
-  const updateAffinity = (category: string, score: number) => {
+  const updateCareerAffinity = (id: string, score: number) => {
     setCareers(prev =>
       prev.map(c =>
-        c.category === category
-          ? { ...c, affinity: Math.min(100, c.affinity + score) }
+        c.id === id
+          ? { ...c, affinity: Math.min(100, score) }
           : c
       )
     );
   };
 
-  const unlockCareer = (id: string) => {
-    setCareers(prev =>
-      prev.map(c =>
-        c.id === id ? { ...c, unlocked: true } : c
-      )
-    );
-  };
-
   const stats = {
-    unlocked: careers.filter(c => c.unlocked).length,
-    inProgress: careers.filter(c => c.affinity > 0 && c.affinity < 60).length,
+    completed: completedSimulations.length,
     total: careers.length,
   };
 
@@ -96,12 +90,12 @@ export const VocationalProvider = ({ children }: { children: ReactNode }) => {
     <VocationalContext.Provider
       value={{
         careers,
-        updateAffinity,
-        unlockCareer,
-        stats,
-
+        updateCareerAffinity,
         completedSimulations,
         markSimulationCompleted,
+        stats,
+        userLevel,
+        levelUp,
       }}
     >
       {children}
