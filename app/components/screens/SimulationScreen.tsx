@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HeaderButton from '../ui/HeaderButton';
 
 export default function SimulationScreen() {
@@ -37,6 +38,8 @@ export default function SimulationScreen() {
 
   const simulation = SIMULATIONS.find(sim => sim.id === id);
   const topic = simulation?.topicPrompt;
+
+  const insets = useSafeAreaInsets();
 
   const loadSimulation = useCallback(async () => {
     // Reiniciar todo antes de cargar
@@ -289,7 +292,7 @@ export default function SimulationScreen() {
       </ScrollView>
 
       {/* Barra de chat falsa abajo */}
-      <View style={styles.fakeInputContainer}>
+      <View style={[styles.fakeInputContainer, { paddingBottom: insets.bottom > 20 ? insets.bottom : 20 }]}>
         <View style={styles.fakeTextInput}>
           <Text style={styles.fakePlaceholder}>Decide con Rooby...</Text>
         </View>

@@ -143,7 +143,7 @@ const futureLocked = orderedUniverse
           <MaterialIcons
             name={expanded ? "expand-less" : "expand-more"}
             size={24}
-            color="#130F40"
+            color="#2F32CD"
           />
           <Text style={styles.expandText}>
             {expanded ? "Ver menos" : "Expandir"}
@@ -274,8 +274,9 @@ const styles = StyleSheet.create({
   expandText: {
     marginLeft: 5,
     fontSize: 16,
-    color: "#130F40",
+    color: "#2F32CD",
     fontFamily: "PoppinsMedium",
+    textDecorationLine: "underline",
   },
   mapBox: {
     marginTop: 10,
