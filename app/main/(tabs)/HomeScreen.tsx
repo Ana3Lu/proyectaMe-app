@@ -106,7 +106,7 @@ export default function HomeScreen() {
                 </View>
 
                 {/* Comunidad */}
-                <TouchableOpacity style={styles.communityCard}>
+                <TouchableOpacity style={styles.communityCard} onPress={() => router.push("/main/(tabs)/CommunityScreen")}>
                 <View style={[styles.iconCircleMini, { backgroundColor: "#8E9099" }]}>
                     <MaterialIcons name="forum" size={30} color="#130F40" />
                 </View>

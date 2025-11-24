@@ -1,4 +1,6 @@
+import { AuthContext } from "@/contexts/AuthContext";
 import { router } from "expo-router";
+import { useContext, useState } from "react";
 import {
   ScrollView,
   StatusBar,
@@ -13,25 +15,44 @@ import HeaderButton from "../components/ui/HeaderButton";
 import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function RegisterScreen() {
+  const { register } = useContext(AuthContext);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+
+  async function handleRegister() {
+    if (!name || !email || !password) return alert("Completa todos los campos");
+    if (password !== password2) return alert("Las contraseñas no coinciden");
+
+    const { error } = await register(name, email, password);
+
+    if (error) return alert(error.message);
+
+    alert("Cuenta creada 🎉");
+
+    router.push("/LoginScreen");
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
         {/* Back Button */}
         <TouchableOpacity style={styles.headerBack}>
-            <HeaderButton 
-                icon="arrow-back" 
-                color="#2F32CD"
-                backgroundColor="transparent" 
-                onPress={() => router.back()}
-            />
+          <HeaderButton 
+              icon="arrow-back" 
+              color="#2F32CD"
+              backgroundColor="transparent" 
+              onPress={() => router.back()}
+          />
         </TouchableOpacity>
 
         <View style={styles.container}>
 
           <StatusBar barStyle="dark-content" />
 
-          {/* Header */}
           <Text style={styles.title}>Crea tu cuenta</Text>
 
           <Text style={styles.subtitle}>
@@ -44,29 +65,53 @@ export default function RegisterScreen() {
             </Text>
           </Text>
 
-          {/* Form */}
           <View style={styles.formCard}>
 
             <Text style={styles.label}>Nombre</Text>
-            <TextInput placeholder="Tu nombre" placeholderTextColor="#A0A0A0" style={styles.input} />
+            <TextInput
+              placeholder="Tu nombre"
+              placeholderTextColor="#A0A0A0"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
 
             <Text style={styles.label}>Correo electrónico</Text>
-            <TextInput placeholder="tu@email.com" placeholderTextColor="#A0A0A0" style={styles.input} />
+            <TextInput
+              placeholder="tu@email.com"
+              placeholderTextColor="#A0A0A0"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+            />
 
             <Text style={styles.label}>Contraseña</Text>
-            <TextInput secureTextEntry placeholder="Tu contraseña" placeholderTextColor="#A0A0A0" style={styles.input} />
+            <TextInput
+              secureTextEntry
+              placeholder="Tu contraseña"
+              placeholderTextColor="#A0A0A0"
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+            />
 
             <Text style={styles.label}>Confirmar contraseña</Text>
-            <TextInput secureTextEntry placeholder="Tu contraseña" placeholderTextColor="#A0A0A0" style={styles.input} />
+            <TextInput
+              secureTextEntry
+              placeholder="Repite tu contraseña"
+              placeholderTextColor="#A0A0A0"
+              style={styles.input}
+              value={password2}
+              onChangeText={setPassword2}
+            />
 
             <PrimaryButton 
               title="Confirmar"
-              onPress={() => {}}
+              onPress={handleRegister}
               fontSize={16}
             />
           </View>
 
-          {/* Footer */}
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>¿Ya tienes cuenta?</Text>
 

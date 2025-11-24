@@ -65,7 +65,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="Comunidad"
+        name="CommunityScreen"
         options={{
           title: "Comunidad",
           tabBarIcon: ({ focused }) => (

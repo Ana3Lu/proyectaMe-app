@@ -1,18 +1,38 @@
-import { Ionicons } from "@expo/vector-icons";
+import { AuthContext } from "@/contexts/AuthContext";
 import { router } from "expo-router";
-import { Image, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useContext, useState } from "react";
+import {
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function LoginScreen() {
+  const { login, isLoading } = useContext(AuthContext);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    const success = await login(email, password);
+    if (success) {
+      router.replace("/main/(tabs)/HomeScreen");
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ backgroundColor: "#fff" }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
 
-          <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+          <StatusBar barStyle="dark-content" />
 
-          {/* Título */}
           <Text style={styles.title}>
             Bienvenido a {"\n"}
             <Text style={styles.highlight}>Proyecta</Text>
@@ -23,7 +43,6 @@ export default function LoginScreen() {
             Inicia sesión para continuar tu exploración
           </Text>
 
-          {/* Formulario */}
           <View style={styles.formCard}>
 
             <Text style={styles.label}>Correo electrónico</Text>
@@ -31,6 +50,9 @@ export default function LoginScreen() {
               placeholder="tu@email.com"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
+              value={email}
+              autoCapitalize="none"
+              onChangeText={setEmail}
             />
 
             <Text style={styles.label}>Contraseña</Text>
@@ -39,51 +61,31 @@ export default function LoginScreen() {
               placeholder="Tu contraseña"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
+              value={password}
+              onChangeText={setPassword}
             />
 
-            {/* Botón Iniciar sesión */}
             <PrimaryButton 
-              title="Iniciar sesión" 
-              onPress={() => router.push("/main/(tabs)/HomeScreen")} 
-              fontSize={16} 
+              title={isLoading ? "Cargando..." : "Iniciar sesión"} 
+              onPress={handleLogin}
             />
 
-            {/* Enlaces */}
             <View style={styles.linksRow}>
-              <TouchableOpacity>
-                <Text style={styles.linkUnderlined} onPress={() => router.push("/ResetScreen")}>¿Olvidó su contraseña?</Text>
+              <TouchableOpacity onPress={() => router.push("/ResetScreen")}>
+                <Text style={styles.linkUnderlined}>¿Olvidaste tu contraseña?</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity>
-                <Text style={styles.linkUnderlinedBlue} onPress={() => router.push("/RegisterScreen")}>Registrarse</Text>
+              <TouchableOpacity onPress={() => router.push("/RegisterScreen")}>
+                <Text style={styles.linkUnderlinedBlue}>Registrarse</Text>
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* Divisor */}
-          <View style={styles.dividerRow}>
-            <View style={styles.line} />
-            <Text style={styles.orText}>O CONTINÚA CON</Text>
-            <View style={styles.line} />
-          </View>
-
-          {/* Botón Google */}
-          <TouchableOpacity style={styles.googleButtonDark}>
-            <Ionicons name="logo-google" size={22} color="#ffffff" />
-            <Text style={styles.googleTextDark}>Google</Text>
-          </TouchableOpacity>
-
-          {/* Imagen */}
-          <Image
-            source={require("../../assets/images/oficios.png")}
-            style={styles.bottomImage}
-          />
-
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
