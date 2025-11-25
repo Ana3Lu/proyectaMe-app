@@ -9,12 +9,13 @@ export interface Goal {
   description: string;
   is_completed: boolean;
   created_at: string;
-  completed_at?: string;
+  completed_at?: string | null;
+  due_date?: string | null;
 }
 
 interface GoalsContextProps {
   goals: Goal[];
-  addGoal: (title: string, description: string) => Promise<void>;
+  addGoal: (title: string, description: string, due_date?: string) => Promise<void>;
   editGoal: (id: string, fields: Partial<Goal>) => Promise<void>;
   completeGoal: (id: string) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
@@ -50,16 +51,19 @@ export const GoalsProvider: React.FC<GoalsProviderProps> = ({ children }) => {
     fetchGoals();
   }, [fetchGoals]);
 
-  const addGoal = async (title: string, description: string) => {
+  const addGoal = async (title: string, description: string, due_date?: string) => {
     if (!user?.id) return;
+
+    const insertObj: any = {
+      user_id: user.id,
+      title,
+      description,
+    };
+    if (due_date) insertObj.due_date = due_date;
 
     const { data } = await supabase
       .from("goals")
-      .insert({
-        user_id: user.id,
-        title,
-        description,
-      })
+      .insert(insertObj)
       .select()
       .single();
 

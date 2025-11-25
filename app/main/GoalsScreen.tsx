@@ -1,58 +1,55 @@
+// app/main/GoalsScreen.tsx
 import HeaderButton from "@/app/components/ui/HeaderButton";
 import { useGoals } from "@/contexts/GoalsContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GoalsScreen() {
   const insets = useSafeAreaInsets();
-  const { goals, completeGoal } = useGoals();
+  const { goals, completeGoal, deleteGoal } = useGoals();
   const [tab, setTab] = useState<"active" | "completed">("active");
 
-  const filteredGoals = (goals || []).filter(
-    g => (tab === "active" ? !g.is_completed : g.is_completed)
-  );
+  const filteredGoals = (goals || []).filter((g) => (tab === "active" ? !g.is_completed : g.is_completed));
+
+  const handleDelete = (id: string) => {
+    Alert.alert("Eliminar meta", "¿Estás seguro que deseas eliminar esta meta?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Eliminar", style: "destructive", onPress: () => deleteGoal(id) },
+    ]);
+  };
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Mis Metas</Text>
             <HeaderButton
-              onPress={() => router.push("../CreateGoalScreen")}
+              onPress={() => router.push("/main/CreateGoalScreen")}
               icon="add"
               color="#fff"
               backgroundColor="#DD3282"
             />
           </View>
-          <Text style={styles.headerSubtitle}>
-            Define tus objetivos y alcanza tu futuro profesional
-          </Text>
+          <Text style={styles.headerSubtitle}>Define tus objetivos y alcanza tu futuro profesional</Text>
 
           <View style={styles.tabsRow}>
             <TouchableOpacity onPress={() => setTab("active")}>
-              <Text
-                style={[
-                  styles.tabText,
-                  tab === "active" && styles.tabTextActive,
-                ]}
-              >
-                Metas activas
-              </Text>
+              <Text style={[styles.tabText, tab === "active" && styles.tabTextActive]}>Metas activas</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setTab("completed")}>
-              <Text
-                style={[
-                  styles.tabText,
-                  tab === "completed" && styles.tabTextActive,
-                ]}
-              >
-                Completadas
-              </Text>
+              <Text style={[styles.tabText, tab === "completed" && styles.tabTextActive]}>Completadas</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>
@@ -60,59 +57,52 @@ export default function GoalsScreen() {
         <View style={{ paddingHorizontal: 20, marginTop: 15 }}>
           {filteredGoals.length === 0 ? (
             <Text style={styles.emptyText}>
-              {tab === "active"
-                ? "No tienes metas activas."
-                : "No has completado ninguna meta aún."}
+              {tab === "active" ? "No tienes metas activas." : "No has completado ninguna meta aún."}
             </Text>
           ) : (
-            filteredGoals.map(goal => (
+            filteredGoals.map((goal) => (
               <View
                 key={goal.id}
-                style={[
-                  styles.goalCard,
-                  goal.is_completed && styles.goalCardCompleted,
-                ]}
+                style={[styles.goalCard, goal.is_completed && styles.goalCardCompleted]}
               >
                 <View style={styles.goalTextRow}>
-                  <Text
-                    style={[
-                      styles.goalTitle,
-                      goal.is_completed && styles.goalTitleCompleted,
-                    ]}
-                  >
+                  <Text style={[styles.goalTitle, goal.is_completed && styles.goalTitleCompleted]}>
                     {goal.title}
                   </Text>
-                  {!goal.is_completed && (
-                    <TouchableOpacity
-                      onPress={() => completeGoal(goal.id)}
-                      style={styles.completeButton}
-                    >
-                      <MaterialIcons
-                        name="check-circle"
-                        size={24}
-                        color="#59B5A2"
-                      />
+
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {!goal.is_completed && (
+                      <TouchableOpacity
+                        onPress={() => completeGoal(goal.id)}
+                        style={styles.iconButton}
+                      >
+                        <MaterialIcons name="check-circle" size={24} color="#59B5A2" />
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity onPress={() => handleDelete(goal.id)} style={styles.iconButton}>
+                      <MaterialIcons name="delete" size={22} color="#DD3282" />
                     </TouchableOpacity>
-                  )}
+                  </View>
                 </View>
-                <Text
-                  style={[
-                    styles.goalDesc,
-                    goal.is_completed && styles.goalDescCompleted,
-                  ]}
-                >
+
+                <Text style={[styles.goalDesc, goal.is_completed && styles.goalDescCompleted]}>
                   {goal.description}
                 </Text>
+
                 <View style={styles.dateRow}>
                   <MaterialIcons name="calendar-today" size={18} color="#444" />
                   <Text style={styles.dateText}>
-                    {new Date(goal.created_at).toLocaleDateString()}
+                    {goal.due_date
+                      ? new Date(goal.due_date).toLocaleDateString()
+                      : new Date(goal.created_at).toLocaleDateString()}
                   </Text>
                 </View>
               </View>
             ))
           )}
         </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>
@@ -164,9 +154,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     elevation: 3,
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   goalCardCompleted: {
-    opacity: 0.5,
+    opacity: 0.55,
   },
   goalTextRow: {
     flexDirection: "row",
@@ -177,13 +169,15 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsSemiBold",
     fontSize: 16,
     color: "#130F40",
+    flex: 1,
+    marginRight: 8,
   },
   goalTitleCompleted: {
     textDecorationLine: "line-through",
     color: "#444",
   },
   goalDesc: {
-    marginTop: 6,
+    marginTop: 8,
     color: "#555",
     fontFamily: "PoppinsRegular",
   },
@@ -198,6 +192,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: "#444",
+    marginLeft: 6,
   },
   emptyText: {
     textAlign: "center",
@@ -206,7 +201,8 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsRegular",
     fontSize: 16,
   },
-  completeButton: {
-    padding: 4,
+  iconButton: {
+    padding: 6,
+    marginLeft: 6,
   },
 });
