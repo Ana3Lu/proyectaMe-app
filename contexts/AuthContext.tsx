@@ -30,11 +30,13 @@ interface AuthContextProps {
 
 export const AuthContext = createContext({} as AuthContextProps);
 
+// Para React Native, usar require para la imagen local
+const DEFAULT_AVATAR = require('../assets/images/robby.png'); 
+
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get user streak
   const getStreak = useCallback(async () => {
     if (!user?.id) return null;
     const { data, error } = await supabase
@@ -49,7 +51,6 @@ export const AuthProvider = ({ children }: any) => {
     return data;
   }, [user?.id]);
 
-  // Load user session
   useEffect(() => {
     const loadUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -59,7 +60,12 @@ export const AuthProvider = ({ children }: any) => {
           .select("*")
           .eq("id", session.user.id)
           .single();
-        if (profileData) setUser(profileData);
+        if (profileData) {
+          setUser({
+            ...profileData,
+            avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+          });
+        }
       }
     };
     loadUser();
@@ -72,7 +78,12 @@ export const AuthProvider = ({ children }: any) => {
             .select("*")
             .eq("id", session.user.id)
             .single();
-          if (profileData) setUser(profileData);
+          if (profileData) {
+            setUser({
+              ...profileData,
+              avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+            });
+          }
         } else {
           setUser(null);
         }
@@ -82,7 +93,6 @@ export const AuthProvider = ({ children }: any) => {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  // LOGIN
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -99,19 +109,21 @@ export const AuthProvider = ({ children }: any) => {
         .single();
 
       if (profileError || !profileData) {
-        // fallback simple profile
         setUser({
           id: data.user.id,
           email: data.user.email!,
           name: data.user.email?.split("@")[0] || "Usuario",
           points: 0,
           bio: "hello!",
+          avatar_url: DEFAULT_AVATAR,
         });
       } else {
-        setUser(profileData);
+        setUser({
+          ...profileData,
+          avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+        });
       }
 
-      // Update streak
       await supabase.rpc("update_user_streak", { p_user_id: data.user.id });
 
       return true;
@@ -123,7 +135,6 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  // REGISTER
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -141,6 +152,7 @@ export const AuthProvider = ({ children }: any) => {
           email: email.trim(),
           points: 0,
           bio: "hello!",
+          avatar_url: DEFAULT_AVATAR,
           plan_type: "free",
         });
 
@@ -149,7 +161,14 @@ export const AuthProvider = ({ children }: any) => {
         return false;
       }
 
-      setUser({ id: data.user.id, name, email, points: 0 });
+      setUser({
+        id: data.user.id,
+        name,
+        email,
+        points: 0,
+        avatar_url: DEFAULT_AVATAR,
+      });
+
       return true;
     } catch (err) {
       console.error(err);
@@ -159,39 +178,35 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  // UPDATE PROFILE
   const updateProfile = async (profileData: Partial<Profile>) => {
-  if (!user?.id) return false;
-  setIsLoading(true);
-  try {
-    const dataToUpdate = { ...profileData };
-    delete (dataToUpdate as any).updated_at; // evita conflicto con PostgREST
+    if (!user?.id) return false;
+    setIsLoading(true);
+    try {
+      const dataToUpdate = { ...profileData };
+      delete (dataToUpdate as any).updated_at;
 
-    const { error } = await supabase
-      .from("profiles")
-      .update(dataToUpdate)
-      .eq("id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update(dataToUpdate)
+        .eq("id", user.id);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    setUser(prev => prev ? { ...prev, ...profileData } : prev);
-    return true;
-  } catch (err) {
-    console.error("Update profile error:", err);
-    return false;
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setUser(prev => prev ? { ...prev, ...profileData, avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : prev.avatar_url || DEFAULT_AVATAR } : prev);
+      return true;
+    } catch (err) {
+      console.error("Update profile error:", err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-
-  // LOGOUT
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
   };
 
-  // SIMULATED PASSWORD RESET
   const resetPasswordSimulated = async (email: string) => {
     if (!email.includes("@")) {
       alert("Invalid email");

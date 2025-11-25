@@ -62,6 +62,8 @@ export default function EditProfileScreen() {
     router.back();
   };
 
+  console.log("Avatar URL:", profile?.avatar_url);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
       <ScrollView
@@ -81,11 +83,13 @@ export default function EditProfileScreen() {
         <View style={styles.avatarWrapper}>
         <View style={styles.avatarContainer}>
             <Image
-            source={{
-                uri: profile.avatar_url || "../../assets/images/robby.png",
-            }}
-            style={styles.avatar}
-            />
+                source={
+                    profile?.avatar_url && profile.avatar_url.trim() !== ""
+                    ? { uri: profile.avatar_url }   // URL remota
+                    : require('../../assets/images/robby.png')  // imagen local
+                }
+                style={styles.avatar}
+                />
             <TouchableOpacity
             style={styles.editIcon}
             onPress={() => {

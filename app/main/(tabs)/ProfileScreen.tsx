@@ -163,9 +163,11 @@ export default function ProfileScreen() {
           <View style={styles.profileCard}>
             <View style={styles.profileRow}>
               <Image
-                source={{
-                  uri: profile?.avatar_url || "https://placehold.co/100x100",
-                }}
+                source={
+                    profile?.avatar_url && profile.avatar_url.trim() !== ""
+                      ? { uri: profile.avatar_url }  
+                      : require('../../../assets/images/robby.png') 
+                    }
                 style={styles.avatar}
               />
               <View style={{ marginLeft: 12, flex: 1 }}>
