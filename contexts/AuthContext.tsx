@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ ...profileData, updated_at: new Date().toISOString() })
+        .update({ ...profileData })
         .eq("id", user.id);
       if (error) throw error;
 

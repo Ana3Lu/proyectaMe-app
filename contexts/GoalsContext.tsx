@@ -1,8 +1,8 @@
+import { AuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/utils/supabase";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { AuthContext } from "./AuthContext";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
-interface Goal {
+export interface Goal {
   id: string;
   user_id: string;
   title: string;
@@ -20,38 +20,50 @@ interface GoalsContextProps {
   deleteGoal: (id: string) => Promise<void>;
 }
 
-const GoalsContext = createContext<GoalsContextProps | null>(null);
+// Opción 1️⃣: el context nunca es null
+const GoalsContext = createContext<GoalsContextProps>({} as GoalsContextProps);
 
-export const GoalsProvider = ({ children }) => {
+interface GoalsProviderProps {
+  children: ReactNode;
+}
+
+export const GoalsProvider: React.FC<GoalsProviderProps> = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [goals, setGoals] = useState<Goal[]>([]);
 
   const fetchGoals = useCallback(async () => {
+  if (!user?.id) {
+    setGoals([]);
+    return;
+  }
+
     const { data } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false });
+      .from("goals")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
     setGoals(data || []);
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id) fetchGoals();
-  }, [user?.id, fetchGoals]);
+    fetchGoals();
+  }, [fetchGoals]);
 
   const addGoal = async (title: string, description: string) => {
+    if (!user?.id) return;
+
     const { data } = await supabase
       .from("goals")
       .insert({
-        user_id: user?.id,
+        user_id: user.id,
         title,
         description,
       })
       .select()
       .single();
 
-    setGoals(prev => [data, ...prev]);
+    if (data) setGoals(prev => [data, ...prev]);
   };
 
   const editGoal = async (id: string, fields: Partial<Goal>) => {
@@ -62,7 +74,7 @@ export const GoalsProvider = ({ children }) => {
       .select()
       .single();
 
-    setGoals(prev => prev.map(g => (g.id === id ? data : g)));
+    if (data) setGoals(prev => prev.map(g => (g.id === id ? data : g)));
   };
 
   const completeGoal = async (id: string) => {
@@ -76,7 +88,7 @@ export const GoalsProvider = ({ children }) => {
       .select()
       .single();
 
-    setGoals(prev => prev.map(g => (g.id === id ? data : g)));
+    if (data) setGoals(prev => prev.map(g => (g.id === id ? data : g)));
   };
 
   const deleteGoal = async (id: string) => {
@@ -91,4 +103,5 @@ export const GoalsProvider = ({ children }) => {
   );
 };
 
+// Hook para usar el context
 export const useGoals = () => useContext(GoalsContext);

@@ -8,12 +8,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useCallback, useContext, useState } from "react";
 import {
+    Alert,
     Image,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,7 +26,6 @@ export default function ProfileScreen() {
   const { user, getStreak } = useContext(AuthContext);
   const [streak, setStreak] = useState(0);
   const [level, setLevel] = useState(1);
-
   const [userAffinities, setUserAffinities] = useState<{ affinity: string }[]>([]);
   const [strengths, setStrengths] = useState<{ skill: string; score: number }[]>([]);
 
@@ -50,10 +50,8 @@ export default function ProfileScreen() {
     return nextLevel ? nextLevel.xpRequired : LEVELS[LEVELS.length - 1].xpRequired;
   };
 
-  // Cargar stats
   const loadStats = useCallback(async () => {
     if (!user) return;
-
     const { data: profileData } = await supabase
       .from("profiles")
       .select("points")
@@ -72,7 +70,6 @@ export default function ProfileScreen() {
     setSimCount(sims ?? 0);
   }, [user]);
 
-  // Cargar perfil
   const loadProfile = useCallback(async () => {
     if (!user) return;
 
@@ -89,7 +86,6 @@ export default function ProfileScreen() {
     if (streakData) setStreak(streakData.current_streak);
   }, [user, loadStats, getStreak]);
 
-  // Afinidades y fortalezas
   const loadAffinitiesAndStrengths = useCallback(async () => {
     if (!user) return;
 
@@ -142,10 +138,17 @@ export default function ProfileScreen() {
   const xpForProgress = nextLevelXp - LEVELS[level - 1].xpRequired;
   const xpProgress = xp - LEVELS[level - 1].xpRequired;
 
+  const handlePremiumPress = () => {
+    if (profile?.plan_type === "premium") {
+      Alert.alert("Premium", "¡Ya eres Premium 🎉");
+    } else {
+      router.push("/main/PremiumInfoScreen");
+    }
+  };
+
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Mi Perfil</Text>
@@ -157,7 +160,6 @@ export default function ProfileScreen() {
             />
           </View>
 
-          {/* CARD DEL PERFIL DENTRO DEL HEADER */}
           <View style={styles.profileCard}>
             <View style={styles.profileRow}>
               <Image
@@ -168,35 +170,35 @@ export default function ProfileScreen() {
               />
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={styles.name}>
-                    {profile?.name || "Cargando..."}
-                  </Text>
+                  <Text style={styles.name}>{profile?.name || "Cargando..."}</Text>
 
                   <TouchableOpacity
-                      style={styles.premiumTag}
-                      onPress={() => router.push("/main/PremiumInfoScreen")}
-                    >
-                      <MaterialIcons name="star" size={16} color="#fff" />
-                      <Text style={styles.premiumText}>Premium</Text>
-                    </TouchableOpacity>
+                    style={[
+                      styles.premiumTag,
+                      profile?.plan_type === "premium" && { backgroundColor: "#F5D142" }
+                    ]}
+                    onPress={handlePremiumPress}
+                  >
+                    <MaterialIcons name="star" size={16} color={profile?.plan_type === "premium" ? "#333" : "#fff"} />
+                    <Text style={[
+                      styles.premiumText,
+                      profile?.plan_type === "premium" && { color: "#333" }
+                    ]}>
+                      Premium
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
-                <Text style={styles.memberSince}>
-                  Miembro desde {memberSinceYear}
-                </Text>
+                <Text style={styles.memberSince}>Miembro desde {memberSinceYear}</Text>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                    {/* Bio */}
-                    <Text style={styles.bio}>{profile?.bio || "Sin biografía"}</Text>
-
-                    {/* Botón de Nivel */}
-                    <TouchableOpacity style={styles.levelTag} activeOpacity={1}>
-                        <Text style={styles.levelText}>Nivel {level}</Text>
-                    </TouchableOpacity>
-                    </View>
+                  <Text style={styles.bio}>{profile?.bio || "Sin biografía"}</Text>
+                  <TouchableOpacity style={styles.levelTag} activeOpacity={1}>
+                    <Text style={styles.levelText}>Nivel {level}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
 
-            {/* PROGRESO AL NIVEL */}
             <View style={styles.progressBox}>
               <View style={styles.progressRow}>
                 <Text style={styles.progressText}>Progreso al Nivel {level + 1}</Text>
@@ -207,7 +209,7 @@ export default function ProfileScreen() {
           </View>
         </LinearGradient>
 
-        {/* ESTADÍSTICAS */}
+        {/* Estadísticas */}
         <View style={styles.statsBlock}>
           <View style={styles.statsInner}>
             <View style={styles.statItem}>
@@ -228,7 +230,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* MIS AFINIDADES */}
         <Text style={styles.sectionTitle}>Mis Afinidades</Text>
         <View style={styles.card}>
           {userAffinities.length > 0 ? (
@@ -245,7 +246,6 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* FORTALEZAS */}
         {strengths.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Fortalezas</Text>
@@ -259,7 +259,6 @@ export default function ProfileScreen() {
           </>
         )}
 
-        {/* BOTÓN GOALS */}
         <TouchableOpacity
           style={styles.goalsButton}
           onPress={() => router.push("../GoalsScreen")}

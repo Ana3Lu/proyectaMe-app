@@ -175,15 +175,30 @@ export default function CommunityScreen() {
         </View>
 
         {/* BOTONES PREMIUM */}
-        {isPremium && (
-          <View style={styles.buttonRow}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <PrimaryButton title="Nueva reflexión" onPress={() => router.push("../NewPostScreen")} />
-            </View>
+        <View style={styles.buttonRow}>
+          <View style={{ flex: 1, marginRight: 10 }}>
+            <PrimaryButton
+              title="Nueva reflexión"
+              onPress={isPremium ? () => router.push("../NewPostScreen") : undefined}
+              disabled={!isPremium}
+            />
+          </View>
 
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <SecondaryButton title="Ver retos" onPress={() => router.push("../MyPostsScreen")} />
-            </View>
+          <View style={{ flex: 1, marginLeft: 10 }}>
+            <SecondaryButton
+              title="Ver retos"
+              onPress={isPremium ? () => router.push("../MyPostsScreen") : undefined}
+              disabled={!isPremium}
+            />
+          </View>
+        </View>
+
+        {/* Mensaje para usuarios free */}
+        {!isPremium && (
+          <View style={styles.freeMessageContainer}>
+            <Text style={styles.freeMessageText}>
+              Para publicar reflexiones y participar activamente, debes subir a plan Premium.
+            </Text>
           </View>
         )}
 
@@ -289,5 +304,18 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontFamily: "PoppinsBold",
     color: "#130F40",
+  },
+  freeMessageContainer: {
+    backgroundColor: "#FFF4E5",
+    marginHorizontal: 25,
+    marginTop: 15,
+    padding: 12,
+    borderRadius: 15,
+  },
+  freeMessageText: {
+    color: "#FFA500",
+    fontWeight: "bold",
+    fontSize: 14,
+    textAlign: "center",
   },
 });

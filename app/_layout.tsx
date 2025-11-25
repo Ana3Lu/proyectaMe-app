@@ -2,19 +2,19 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { SimulationProvider } from '@/contexts/SimulationContext';
 import { VocationalProvider } from '@/contexts/VocationalContext';
 import { Poppins_400Regular, Poppins_700Bold, useFonts } from "@expo-google-fonts/poppins";
-import * as Notifications from 'expo-notifications';
+//import * as Notifications from 'expo-notifications';
+import { GoalsProvider } from '@/contexts/GoalsContext';
 import { Stack } from 'expo-router';
 import 'react-native-reanimated';
 
-
-Notifications.setNotificationHandler({
+/*Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: false,
     shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
   }),
-});
+});*/
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -51,13 +51,15 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <VocationalProvider>
-        <SimulationProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-          </Stack>
-        </SimulationProvider>
-      </VocationalProvider>
+      <GoalsProvider>
+        <VocationalProvider>
+          <SimulationProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+            </Stack>
+          </SimulationProvider>
+        </VocationalProvider>
+      </GoalsProvider>
     </AuthProvider>
   )
 }
