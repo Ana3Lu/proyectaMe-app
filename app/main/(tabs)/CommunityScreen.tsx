@@ -28,6 +28,7 @@ type Post = {
   likes: number;
   liked: boolean;
   tags?: string[];
+  avatar_url?: string | null;
 };
 
 export default function CommunityScreen() {
@@ -37,6 +38,18 @@ export default function CommunityScreen() {
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+
+  // Traer avatar del usuario desde Supabase
+  const loadUserAvatar = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id)
+      .single();
+    setUserAvatar(data?.avatar_url || null);
+  }, [user]);
 
   const fetchBooks = useCallback(async () => {
     if (!user) return;
@@ -52,17 +65,30 @@ export default function CommunityScreen() {
   }, [user]);
 
   const fetchPosts = useCallback(async () => {
-    if (!user) return;
-    const { data: postsData } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
+  if (!user) return;
 
+  // Traer posts
+  const { data: postsData } = await supabase
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+    // Traer likes del usuario actual
     const { data: likesData } = await supabase
       .from("posts_likes")
       .select("post_id, liked")
       .eq("user_id", user.id);
 
+    // Obtener los IDs de los autores únicos
+    const authorIds = Array.from(new Set(postsData?.map((p: any) => p.user_id)));
+
+    // Traer avatares de esos autores
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, avatar_url")
+      .in("id", authorIds);
+
+    // Mapear posts con likes y avatar
     const postsWithLikes: Post[] =
       postsData?.map((p: any) => ({
         id: p.id,
@@ -73,17 +99,17 @@ export default function CommunityScreen() {
         likes: p.likes ?? 0,
         liked: likesData?.some((l) => l.post_id === p.id && l.liked) || false,
         tags: p.tags || [],
+        avatar_url: profilesData?.find((prof) => prof.id === p.user_id)?.avatar_url || null,
       })) || [];
 
     setPosts(postsWithLikes);
   }, [user]);
 
-  // Fetch books al montar
   useEffect(() => {
     fetchBooks();
-  }, [fetchBooks]);
+    loadUserAvatar();
+  }, [fetchBooks, loadUserAvatar]);
 
-  // Refresca posts cada vez que esta pantalla toma foco
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
@@ -125,15 +151,11 @@ export default function CommunityScreen() {
             <View style={styles.trophyCircle}>
               <MaterialIcons name="emoji-events" size={32} color="#130F40" />
             </View>
-
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.weeklyTitle}>Reto Semanal</Text>
-              <Text style={styles.weeklyDesc}>
-                Completa 3 simulaciones esta semana
-              </Text>
+              <Text style={styles.weeklyDesc}>Completa 3 simulaciones esta semana</Text>
             </View>
           </View>
-
           <View style={styles.progressRow}>
             <ProgressBar value={66} />
             <Text style={styles.progressText}>2/3</Text>
@@ -173,7 +195,7 @@ export default function CommunityScreen() {
             text={p.text}
             likes={p.likes}
             comments={0}
-            avatar={require("../../../assets/images/robby.png")}
+            avatar={p.avatar_url  ? { uri: p.avatar_url } : require("../../../assets/images/robby.png")}
             liked={p.liked}
             tag={p.tags?.[0]}
             onToggleLike={() => handleToggleLike(p.id, p.liked)}
@@ -205,7 +227,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 32, color: "#fff", fontFamily: "PoppinsBold" },
   headerSubtitle: { color: "#fff", marginTop: 5, fontFamily: "PoppinsRegular", fontSize: 18, maxWidth: 260 },
   buttonRow: { 
-    flexDirection: "column", // ahora botones uno debajo del otro
+    flexDirection: "column",
     paddingHorizontal: 25, 
     marginTop: 20, 
     justifyContent: "center", 
@@ -214,37 +236,10 @@ const styles = StyleSheet.create({
   sectionTitle: { paddingHorizontal: 25, marginTop: 25, fontSize: 26, fontFamily: "PoppinsBold", color: "#130F40" },
   freeMessageContainer: { backgroundColor: "#FFF4E5", marginHorizontal: 25, marginTop: 15, padding: 12, borderRadius: 15 },
   freeMessageText: { color: "#FFA500", fontWeight: "bold", fontSize: 14, textAlign: "center" },
-  weeklyCard: {
-    backgroundColor: "#D9D7FF",
-    marginHorizontal: 25,
-    marginTop: -25,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-  },
-  trophyCircle: {
-    width: 55,
-    height: 55,
-    borderRadius: 20,
-    backgroundColor: "#BEBBFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  weeklyCard: { backgroundColor: "#D9D7FF", marginHorizontal: 25, marginTop: -25, paddingVertical: 15, paddingHorizontal: 10, borderRadius: 20 },
+  trophyCircle: { width: 55, height: 55, borderRadius: 20, backgroundColor: "#BEBBFF", justifyContent: "center", alignItems: "center" },
   weeklyTitle: { fontFamily: "PoppinsBold", color: "#130F40", fontSize: 18 },
-  weeklyDesc: {
-    fontFamily: "PoppinsRegular",
-    fontSize: 14,
-    color: "#130F40",
-  },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-  },
-  progressText: {
-    marginLeft: 10,
-    fontFamily: "PoppinsBold",
-    fontSize: 16,
-    color: "#130F40",
-  },
+  weeklyDesc: { fontFamily: "PoppinsRegular", fontSize: 14, color: "#130F40" },
+  progressRow: { flexDirection: "row", alignItems: "center", marginTop: 12 },
+  progressText: { marginLeft: 10, fontFamily: "PoppinsBold", fontSize: 16, color: "#130F40" },
 });
