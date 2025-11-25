@@ -1,8 +1,10 @@
+import HeaderButton from "@/app/components/ui/HeaderButton";
 import MapNode from "@/app/components/ui/MapNode";
 import { ALL_PROFESSIONS } from "@/constants/allProfessions";
 import { useVocational } from "@/contexts/VocationalContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   ScrollView,
@@ -104,9 +106,17 @@ const futureLocked = orderedUniverse
         
         {/* Header */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
-          <Text style={styles.title}>Mapa vocacional</Text>
-          <Text style={styles.subtitle}>Explora tu universo de carreras</Text>
-
+          <View style={styles.headerRow}>
+            <HeaderButton
+              icon="arrow-back"
+              onPress={() => router.back()}
+            />
+            <View style={{ flexShrink: 1 }}>
+              <Text style={styles.title}>Mapa vocacional</Text>
+              <Text style={styles.subtitle}>Explora tu universo de carreras</Text>
+            </View>
+          </View>
+        
           <View style={styles.statsBlock}>
             <View style={styles.statsInner}>
 
@@ -224,6 +234,10 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   title: {
     fontSize: 32,
