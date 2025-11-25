@@ -141,47 +141,39 @@ export const AuthProvider = ({ children }: any) => {
 
   // Register (create user + profile)
   const register = async (name: string, email: string, password: string) => {
-  setIsLoading(true);
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error || !data.user) {
+        alert(error?.message);
+        return false;
+      }
 
-    //console.log(">>> Auth signUp:", { data, error });
+      // Crear perfil manualmente desde la app
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: data.user.id,
+          name: name.trim(),
+          email: email.trim(),
+          points: 0,
+          bio: "hello!",
+          plan_type: "free",
+        });
 
-    if (error || !data.user) {
-      console.log("❌ Auth signUp error:", error?.message);
-      alert("Registration failed: " + error?.message);
+      if (profileError) {
+        alert(profileError.message);
+        return false;
+      }
+
+      setUser({ id: data.user.id, name, email, points: 0 });
+      alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+      return true;
+    } catch (err) {
+      console.error(err);
       return false;
-    }
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: data.user?.id,
-        name: name.trim(),
-        email: email.trim(),
-        points: 0,
-        bio: "hello!",
-        plan_type: "free"
-      });
-
-    if (profileError) {
-      console.log("❌ Error inserting profile:", profileError.message);
-      alert("Error creating profile: " + profileError.message);
-      return false;
-    }
-
-    setUser({ id: data.user.id, name, email, points: 0 });
-    alert("Registration successful! You can now log in.");
-    return true;
-  } catch (err) {
-    console.log("Unexpected registration error:", err);
-    alert("Unexpected error during registration.");
-    return false;
-  } finally {
-    setIsLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -196,7 +188,7 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ ...profileData, updated_at: new Date().toISOString})
+        .update({ ...profileData, updated_at: new Date().toISOString, name: name.trim() })
         .eq("id", user.id);
 
       if (error) {

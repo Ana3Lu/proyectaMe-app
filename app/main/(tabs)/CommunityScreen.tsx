@@ -3,6 +3,7 @@ import HeaderButton from "@/app/components/ui/HeaderButton";
 import PostCard from "@/app/components/ui/PostCard";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
+import SecondaryButton from "@/app/components/ui/SecondaryButton";
 import { AuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/utils/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -20,7 +21,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 
@@ -181,9 +181,9 @@ export default function CommunityScreen() {
               <PrimaryButton title="Nueva reflexión" onPress={() => router.push("../NewPostScreen")} />
             </View>
 
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Ver retos</Text>
-            </TouchableOpacity>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <SecondaryButton title="Ver retos" onPress={() => router.push("../MyPostsScreen")} />
+            </View>
           </View>
         )}
 
@@ -282,20 +282,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: 25,
     marginTop: 20,
-  },
-  secondaryButton: {
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#130F40",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 30,
-    justifyContent: "center",
-  },
-  secondaryButtonText: {
-    fontFamily: "PoppinsBold",
-    color: "#130F40",
-    fontSize: 16,
   },
   sectionTitle: {
     paddingHorizontal: 25,

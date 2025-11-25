@@ -58,7 +58,10 @@ export default function EditProfileScreen() {
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -172,21 +175,23 @@ export default function EditProfileScreen() {
       </ScrollView>
 
       {/* BOTONES ABAJO */}
-      <View style={styles.footerButtons}>
+      <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.btn, { backgroundColor: "#DD3282" }]}
-          onPress={saveChanges}
+            style={styles.primaryButton}
+            onPress={saveChanges}
         >
-          <Text style={styles.btnText}>{loading ? "Guardando..." : "Guardar"}</Text>
+            <Text style={styles.primaryButtonText}>
+            {loading ? "Guardando..." : "Guardar"}
+            </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, { backgroundColor: "#aaa" }]}
-          onPress={() => router.back()}
+            style={styles.secondaryButton}
+            onPress={() => router.back()}
         >
-          <Text style={styles.btnText}>Cancelar</Text>
+            <Text style={styles.secondaryButtonText}>Cancelar</Text>
         </TouchableOpacity>
-      </View>
+        </View>
 
       <CameraModal
         isVisible={cameraVisible}
@@ -301,25 +306,38 @@ const styles = StyleSheet.create({
   },
 
   /* FOOTER BUTTONS */
-  footerButtons: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    gap: 10,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-  },
-  btn: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 14,
-    alignItems: "center",
-  },
-  btnText: {
-    color: "#fff",
-    fontFamily: "PoppinsBold",
-    fontSize: 16,
-  },
+  footer: {
+  paddingHorizontal: 20,
+  paddingBottom: 25,
+  paddingTop: 10,
+  backgroundColor: "#fff",
+},
+primaryButton: {
+  backgroundColor: "#DD3282",
+  paddingVertical: 16,
+  borderRadius: 18,
+  alignItems: "center",
+  marginBottom: 12,
+  shadowColor: "#DD3282",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.2,
+  shadowRadius: 8,
+  elevation: 4,
+},
+primaryButtonText: {
+  color: "#fff",
+  fontFamily: "PoppinsBold",
+  fontSize: 18,
+},
+secondaryButton: {
+  backgroundColor: "#D3D3D3",
+  paddingVertical: 16,
+  borderRadius: 18,
+  alignItems: "center",
+},
+secondaryButtonText: {
+  color: "#333",
+  fontSize: 16,
+  fontFamily: "PoppinsSemiBold",
+},
 });
