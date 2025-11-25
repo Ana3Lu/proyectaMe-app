@@ -5,10 +5,17 @@ interface BookCardProps {
   title: string;
   author?: string;
   image?: string;
+  description?: string;
   onPress: () => void;
 }
 
-export default function BookCard({ title, author, image, onPress }: BookCardProps) {
+// Función que limpia etiquetas HTML <p>, <br>, etc.
+const cleanHTML = (text?: string) => {
+  if (!text) return "";
+  return text.replace(/<[^>]+>/g, ""); // Remueve cualquier etiqueta
+};
+
+export default function BookCard({ title, author, image, description, onPress }: BookCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       {image ? (
@@ -18,8 +25,18 @@ export default function BookCard({ title, author, image, onPress }: BookCardProp
       )}
 
       <View style={styles.info}>
-        <Text style={styles.title}>{title}</Text>
-        {author && <Text style={styles.author}>{author}</Text>}
+        <Text style={styles.title}>{cleanHTML(title)}</Text>
+
+        {author && <Text style={styles.author}>{cleanHTML(author)}</Text>}
+
+        {description && (
+          <Text
+            numberOfLines={3}
+            style={styles.desc}
+          >
+            {cleanHTML(description)}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -65,5 +82,11 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsRegular",
     color: "#555",
     fontSize: 14,
+  },
+  desc: {
+    fontFamily: "PoppinsRegular",
+    color: "#666",
+    fontSize: 13,
+    marginTop: 5,
   },
 });

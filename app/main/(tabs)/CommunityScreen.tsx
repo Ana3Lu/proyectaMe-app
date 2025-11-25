@@ -221,7 +221,7 @@ export default function CommunityScreen() {
             title={b.volumeInfo.title}
             author={b.volumeInfo.authors?.join(", ")}
             image={b.volumeInfo.imageLinks?.thumbnail}
-            onPress={() => {}}
+            onPress={() => router.push(`../../books/${b.id}`)}
           />
         ))}
 

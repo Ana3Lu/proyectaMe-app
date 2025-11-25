@@ -1,4 +1,5 @@
 import BookCard from "@/app/components/ui/BookCard";
+import HeaderButton from "@/app/components/ui/HeaderButton";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { SIMULATIONS } from "@/constants/simulations";
 import { AuthContext } from "@/contexts/AuthContext";
@@ -26,6 +27,7 @@ type GoogleBook = {
     imageLinks?: {
       thumbnail?: string;
     };
+    description?: string;
     infoLink?: string;
   };
 }
@@ -86,7 +88,7 @@ export default function HomeScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
                 <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
@@ -125,6 +127,10 @@ export default function HomeScreen() {
 
                 </View>  
                 </LinearGradient>
+
+                <View style={{ position: "absolute", top: insets.top + 10, left: 15 }}>
+                  <HeaderButton icon="arrow-back" onPress={() => router.back()} />
+                </View>
 
                 {/* Bloque de estadísticas */}
                 <View style={styles.statsBlock}>
@@ -216,14 +222,15 @@ export default function HomeScreen() {
                 <Text style={styles.sectionTitle}>Lecturas para ti</Text>
 
                 {books.map((b) => (
-                  <BookCard
-                    key={b.id}
-                    title={b.volumeInfo.title}
-                    author={b.volumeInfo.authors?.join(", ")}
-                    image={b.volumeInfo.imageLinks?.thumbnail}
-                    onPress={() => router.push(`../../books/${b.id}`)}
-                  />
-                ))}
+                <BookCard
+                  key={b.id}
+                  title={b.volumeInfo.title}
+                  author={b.volumeInfo.authors?.join(", ")}
+                  image={b.volumeInfo.imageLinks?.thumbnail}
+                  description={b.volumeInfo.description}
+                  onPress={() => router.push(`../../books/${b.id}`)}
+                />
+              ))}
               </View>
         </ScrollView>
       </View>
