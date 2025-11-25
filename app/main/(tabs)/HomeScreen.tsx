@@ -36,6 +36,8 @@ export default function HomeScreen() {
     const insets = useSafeAreaInsets();
     const { user } = useContext(AuthContext);
     const [books, setBooks] = useState<GoogleBook[]>([]);
+    const [xp, setXp] = useState(0);
+    const [affinityCount, setAffinityCount] = useState(0);
 
     const fetchBooks = useCallback(async () => {
       if (!user) return;
@@ -56,9 +58,31 @@ export default function HomeScreen() {
       setBooks(json.items || []);
     }, [user]);
 
+    const fetchUserStats = useCallback(async () => {
+      if (!user) return;
+
+      // Traer XP del perfil
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("id", user.id)
+        .single();
+
+      setXp(profile?.points ?? 0);
+
+      // Contar afinidades desde user_affinities
+      const { count } = await supabase
+        .from("user_affinities")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      setAffinityCount(count ?? 0);
+    }, [user]);
+
     useEffect(() => {
       fetchBooks();
-    }, [fetchBooks]);
+      fetchUserStats();
+    }, [fetchBooks, fetchUserStats]);
 
     return (
         <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
@@ -109,7 +133,7 @@ export default function HomeScreen() {
                     <View style={styles.statItem}>
                     <MaterialIcons name="emoji-events" size={65} color="#59B5A2" />
                     <View style={styles.statTextBlock}>
-                        <Text style={styles.statNumber}>230</Text>
+                        <Text style={styles.statNumber}>{xp}</Text>
                         <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
                     </View>
                     </View>
@@ -117,7 +141,7 @@ export default function HomeScreen() {
                     <View style={styles.statItem}>
                     <FontAwesome name="bullseye" size={65} color="#7794F5" />
                     <View style={styles.statTextBlock}>
-                        <Text style={styles.statNumber}>2</Text>
+                        <Text style={styles.statNumber}>{affinityCount}</Text>
                         <Text style={[styles.statLabel, { color: "#7794F5" }]}>Afinidades</Text>
                     </View>
                     </View>
@@ -161,18 +185,34 @@ export default function HomeScreen() {
                 <Text style={styles.sectionTitle}>Recomendado para ti</Text>
 
                 <View style={styles.recommendedCard}>
-                <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
-                    <View style={[styles.iconCircleMini, { backgroundColor: "#85E0CD" }]}>
-                        <FontAwesome5 name="brain" size={25} color="#130F40" />
-                    </View>
+                  <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
+                      <View style={[styles.iconCircleMini, { backgroundColor: "#85E0CD" }]}>
+                          <FontAwesome5 name="brain" size={25} color="#130F40" />
+                      </View>
 
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                        <Text style={styles.recTitle}>{recommended.title}</Text>
-                        <Text style={styles.recDesc}>{recommended.desc}</Text>
-                    </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                          <Text style={styles.recTitle}>{recommended.title}</Text>
+                          <Text style={styles.recDesc}>{recommended.desc}</Text>
+                      </View>
+                  </View>
+
+                  {/* Botón */}
+                  <View style={styles.buttonRow}>
+                      <PrimaryButton 
+                      title="Probar ya"
+                      fontSize={14}
+                      onPress={() =>
+                          router.push({
+                          pathname: "/components/screens/SimulationScreen",
+                          params: { id: recommended.id }
+                          })
+                      }
+                      />
+                  </View>
                 </View>
 
-                {/* Libros recomendados */}
+              {/* Libros recomendados */}
+              <View>
                 <Text style={styles.sectionTitle}>Lecturas para ti</Text>
 
                 {books.map((b) => (
@@ -184,21 +224,7 @@ export default function HomeScreen() {
                     onPress={() => router.push(`../../books/${b.id}`)}
                   />
                 ))}
-
-                {/* Botón */}
-                <View style={styles.buttonRow}>
-                    <PrimaryButton 
-                    title="Probar ya"
-                    fontSize={14}
-                    onPress={() =>
-                        router.push({
-                        pathname: "/components/screens/SimulationScreen",
-                        params: { id: recommended.id }
-                        })
-                    }
-                    />
-                </View>
-            </View>
+              </View>
         </ScrollView>
       </View>
     );
@@ -393,7 +419,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 2,
     borderColor: "#CFF6EB",
-    marginBottom: 30,
+    marginBottom: 10,
   },
   recTitle: {
     fontFamily: "PoppinsBold",

@@ -1,17 +1,55 @@
+import { ProgressBar } from "@/app/components/ui/ProgressBar";
 import { AuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/utils/supabase";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useContext, useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useContext, useEffect, useState } from "react";
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useContext(AuthContext);
 
   const [profile, setProfile] = useState<any>(null);
+  const [xp, setXp] = useState(0);
+  const [simCount, setSimCount] = useState(0);
+  const [affinityCount, setAffinityCount] = useState(0);
+  const { user, getStreak } = useContext(AuthContext);
+  const [streak, setStreak] = useState(0);
+
+  const loadStats = useCallback(async () => {
+    if (!user) return;
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("points")
+      .eq("id", user.id)
+      .single();
+
+    setXp(profileData?.points ?? 0);
+
+    const { count: sims } = await supabase
+      .from("completed_simulations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    setSimCount(sims ?? 0);
+
+    const { count: affinities } = await supabase
+      .from("user_affinities")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    setAffinityCount(affinities ?? 0);
+  }, [user]);
 
   useEffect(() => {
     const load = async () => {
@@ -24,15 +62,23 @@ export default function ProfileScreen() {
         .single();
 
       setProfile(data);
-    };
 
+      loadStats();
+
+      const streakData = await getStreak();
+      if (streakData) setStreak(streakData.current_streak);
+    };
     load();
-  }, [user]);
+  }, [user, loadStats]);
+
+  const memberSinceYear = profile?.created_at
+    ? new Date(profile.created_at).getFullYear()
+    : "—";
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
+        {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Mi Perfil</Text>
@@ -41,58 +87,92 @@ export default function ProfileScreen() {
               <MaterialIcons name="settings" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
+        </LinearGradient>
 
-          <View style={styles.profileCard}>
+        {/* CARD DEL PERFIL COMPLETA */}
+        <View style={styles.card}>
+          <View style={styles.profileRow}>
             <Image
-              source={{ uri: profile?.avatar_url || "https://placehold.co/100x100" }}
+              source={{
+                uri: profile?.avatar_url || "https://placehold.co/100x100",
+              }}
               style={styles.avatar}
             />
 
-            <View style={{ marginLeft: 12 }}>
-              <Text style={styles.name}>{profile?.name || "Cargando..."}</Text>
-              <Text style={styles.premiumTag}>Premium</Text>
-              <Text style={styles.memberSince}>Miembro desde 2025</Text>
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <View style={styles.nameRow}>
+                <Text style={styles.name}>
+                  {profile?.name || "Cargando..."}
+                </Text>
+
+                {/* PREMIUM */}
+                <View style={styles.premiumTag}>
+                  <MaterialIcons name="star" size={16} color="#fff" />
+                  <Text style={styles.premiumText}>Premium</Text>
+                </View>
+              </View>
+
+              <Text style={styles.memberSince}>
+                Miembro desde {memberSinceYear}
+              </Text>
+
+              <Text style={styles.bio}>
+                {profile?.bio || "Sin biografía"}
+              </Text>
             </View>
           </View>
 
+          {/* PROGRESS */}
           <View style={styles.progressBox}>
-            <Text style={styles.progressText}> Progreso al Nivel 4 </Text>
-            <Text style={styles.progressBar}>230 / 300 XP</Text>
-          </View>
-        </LinearGradient>
-
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <MaterialIcons name="psychology" size={40} color="#7794F5" />
-            <Text style={styles.statNumber}>5</Text>
-            <Text style={styles.statLabel}>Simulaciones</Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <MaterialIcons name="emoji-events" size={40} color="#59B5A2" />
-            <Text style={styles.statNumber}>230</Text>
-            <Text style={styles.statLabel}>XP</Text>
-          </View>
-
-          <View style={styles.statBox}>
-            <MaterialIcons name="local-fire-department" size={40} color="#DD3282" />
-            <Text style={styles.statNumber}>7</Text>
-            <Text style={styles.statLabel}>Racha días</Text>
+            <Text style={styles.progressText}>Progreso al Nivel 4</Text>
+            <ProgressBar value={(xp / 300) * 100} />
+            <Text style={styles.progressDetail}>{xp} / 300 XP</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Mis Afinidades</Text>
+        {/* STATS CARD */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Estadísticas</Text>
 
-        <View style={styles.affinityCard}>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <FontAwesome5 name="brain" size={40} color="#7794F5" />
+              <Text style={styles.statNumber}>{simCount}</Text>
+              <Text style={styles.statLabel}>Simulaciones</Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <MaterialIcons name="emoji-events" size={45} color="#59B5A2" />
+              <Text style={styles.statNumber}>{xp}</Text>
+              <Text style={styles.statLabel}>XP</Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <Feather name="trending-up" size={45} color="#C89E00" />
+              <Text style={styles.statNumber}>{streak}</Text>
+              <Text style={styles.statLabel}>Racha</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* AFINIDADES */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Mis Afinidades</Text>
+
           <Text style={styles.affRow}>🔴 Salud — 75%</Text>
           <Text style={styles.affRow}>🔵 Tecnología — 35%</Text>
           <Text style={styles.affRow}>🟣 Creatividad — 54%</Text>
         </View>
 
-        <TouchableOpacity style={styles.goalsButton} onPress={() => router.push("../GoalsScreen")}>
+        {/* BOTON GOALS */}
+        <TouchableOpacity
+          style={styles.goalsButton}
+          onPress={() => router.push("../GoalsScreen")}
+        >
           <Text style={styles.goalsText}>Establecer metas</Text>
         </TouchableOpacity>
 
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
@@ -101,7 +181,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   header: {
     padding: 25,
-    paddingBottom: 60,
+    paddingBottom: 30,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
   },
@@ -114,9 +194,22 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: "PoppinsBold",
   },
-  profileCard: {
-    flexDirection: "row",
+
+  /* CARD GENERAL */
+  card: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
     marginTop: 20,
+    padding: 20,
+    borderRadius: 20,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+
+  /* PROFILE CARD */
+  profileRow: {
+    flexDirection: "row",
     alignItems: "center",
   },
   avatar: {
@@ -124,84 +217,91 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 50,
     borderWidth: 3,
-    borderColor: "#fff",
+    borderColor: "#7794F5",
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   name: {
     fontSize: 22,
-    color: "#fff",
     fontFamily: "PoppinsBold",
   },
   premiumTag: {
+    flexDirection: "row",
     backgroundColor: "#DD3282",
-    color: "#fff",
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2,
     borderRadius: 8,
+    alignItems: "center",
+  },
+  premiumText: {
+    color: "#fff",
+    marginLeft: 4,
     fontSize: 12,
-    marginTop: 4,
-    alignSelf: "flex-start",
+    fontFamily: "PoppinsBold",
   },
   memberSince: {
-    color: "#fff",
     marginTop: 4,
+    color: "#555",
   },
+  bio: {
+    marginTop: 4,
+    color: "#333",
+  },
+
+  /* PROGRESS */
   progressBox: {
-    marginTop: 18,
+    marginTop: 20,
   },
   progressText: {
-    color: "#fff",
     fontFamily: "PoppinsMedium",
+    marginBottom: 6,
   },
-  progressBar: {
-    color: "#fff",
+  progressDetail: {
     marginTop: 4,
+    color: "#333",
+  },
+
+  /* STATS */
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: "PoppinsBold",
+    marginBottom: 12,
   },
   statsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: -30,
+    justifyContent: "space-between",
+    paddingTop: 8,
   },
-  statBox: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 18,
+  statItem: {
     alignItems: "center",
-    width: 100,
-    elevation: 3,
+    width: "33%",
   },
   statNumber: {
-    fontSize: 22,
+    fontSize: 28,
     fontFamily: "PoppinsBold",
-    marginTop: 4,
+    marginTop: 6,
   },
   statLabel: {
-    fontSize: 12,
-    color: "#444",
+    fontSize: 13,
+    color: "#666",
   },
-  sectionTitle: {
-    fontSize: 24,
-    marginTop: 25,
-    marginLeft: 20,
-    fontFamily: "PoppinsBold",
-  },
-  affinityCard: {
-    marginHorizontal: 20,
-    padding: 18,
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    marginTop: 10,
-    elevation: 2,
-  },
+
+  /* AFINIDADES */
   affRow: {
     fontSize: 16,
-    marginVertical: 6,
+    marginVertical: 4,
   },
+
+  /* BOTON */
   goalsButton: {
     marginHorizontal: 20,
     marginTop: 20,
-    backgroundColor: "#DD3282",
     padding: 15,
-    borderRadius: 18,
+    backgroundColor: "#DD3282",
+    borderRadius: 20,
     alignItems: "center",
   },
   goalsText: {

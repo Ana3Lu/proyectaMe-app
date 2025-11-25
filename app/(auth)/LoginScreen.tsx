@@ -1,7 +1,9 @@
 import { AuthContext } from "@/contexts/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import {
+  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -80,12 +82,31 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Divisor */}
+          <View style={styles.dividerRow}>
+            <View style={styles.line} />
+            <Text style={styles.orText}>O CONTINÚA CON</Text>
+            <View style={styles.line} />
+          </View>
+
+          {/* Botón Google */}
+          <TouchableOpacity style={styles.googleButtonDark}>
+            <Ionicons name="logo-google" size={22} color="#ffffff" />
+            <Text style={styles.googleTextDark}>Google</Text>
+          </TouchableOpacity>
+
+          {/* Imagen */}
+          <Image
+            source={require("../../assets/images/oficios.png")}
+            style={styles.bottomImage}
+          />
+
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

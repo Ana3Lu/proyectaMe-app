@@ -1,7 +1,8 @@
 import HeaderButton from "@/app/components/ui/HeaderButton";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function PremiumInfoScreen() {
   return (
@@ -20,10 +21,7 @@ export default function PremiumInfoScreen() {
           </Text>
 
           <View style={styles.iconCircle}>
-            <Image
-              source={require("@/assets/icons/crown.png")}
-              style={{ width: 60, height: 60 }}
-            />
+            <FontAwesome5 name="crown" size={50} color="#000" />
           </View>
         </LinearGradient>
 

@@ -24,6 +24,7 @@ interface AuthContextProps {
   setUser: (user: any | null) => void;
   logout: () => Promise<void>;
   resetPasswordSimulated: (email: string) => Promise<boolean>;
+  getStreak: () => Promise<any>;
 }
 
 export const AuthContext = createContext({} as AuthContextProps);
@@ -31,6 +32,23 @@ export const AuthContext = createContext({} as AuthContextProps);
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState(null as any);
   const [isLoading, setIsLoading] = useState(false);
+
+  const getStreak = async () => {
+    if (!user?.id) return null;
+
+    const { data, error } = await supabase
+      .from("user_streaks")
+      .select("current_streak, last_activity")
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) {
+      console.log("Error fetching streak:", error.message);
+      return null;
+    }
+
+    return data;
+  };
 
   // Keep session active
   useEffect(() => {
@@ -104,6 +122,12 @@ export const AuthProvider = ({ children }: any) => {
         } else {
           setUser(profile);
         }
+
+        // Actualizar racha diaria
+        await supabase.rpc("update_user_streak", {
+          p_user_id: data.user.id
+        });
+
         return true;
       }
       return false;
@@ -229,6 +253,7 @@ export const AuthProvider = ({ children }: any) => {
         setUser,
         logout,
         resetPasswordSimulated,
+        getStreak
       }}
     >
       {children}

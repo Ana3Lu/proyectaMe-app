@@ -1,7 +1,7 @@
 import CameraModal from "@/app/components/modals/CameraModal";
 import { AuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/utils/supabase";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import {
     Image,
     ScrollView,
     StyleSheet,
+    Switch,
     Text,
     TextInput,
     TouchableOpacity,
@@ -18,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,7 @@ export default function EditProfileScreen() {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
+
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -57,6 +59,7 @@ export default function EditProfileScreen() {
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={28} color="#fff" />
@@ -66,7 +69,7 @@ export default function EditProfileScreen() {
 
           <TouchableOpacity onPress={() => setCameraVisible(true)}>
             <Image
-              source={{ uri: profile.avatar_url || "https://placehold.co/100x100" }}
+              source={{ uri: profile.avatar_url || "https://placehold.co/120x120" }}
               style={styles.avatar}
             />
             <View style={styles.editIcon}>
@@ -75,7 +78,8 @@ export default function EditProfileScreen() {
           </TouchableOpacity>
         </LinearGradient>
 
-        <View style={styles.formCard}>
+        {/* CARD INFORMACIÓN PERSONAL */}
+        <View style={styles.card}>
           <Text style={styles.section}>Información Personal</Text>
 
           <Text style={styles.label}>Nombre</Text>
@@ -95,15 +99,79 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Nivel educativo</Text>
           <TextInput
             value={profile.education_level}
-            onChangeText={(v) => setProfile({ ...profile, education_level: v })}
+            onChangeText={(v) =>
+              setProfile({ ...profile, education_level: v })
+            }
             style={styles.input}
           />
         </View>
 
-        <View style={{ height: 100 }} />
+        {/* CARD PREFERENCIAS */}
+        <View style={styles.card}>
+          <Text style={styles.section}>Preferencias</Text>
+
+          {/* Notificaciones */}
+          <View style={styles.prefRow}>
+            <Feather name="bell" size={22} color="#333" />
+
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.prefTitle}>Notificaciones</Text>
+              <Text style={styles.prefSub}>Recibe recordatorios diarios</Text>
+            </View>
+
+            <Switch
+              value={profile.notifications_enabled}
+              onValueChange={(v) =>
+                setProfile({ ...profile, notifications_enabled: v })
+              }
+            />
+          </View>
+
+          {/* Modo oscuro */}
+          <View style={styles.prefRow}>
+            <Feather name="moon" size={22} color="#333" />
+
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.prefTitle}>Modo oscuro</Text>
+              <Text style={styles.prefSub}>Activa el tema oscuro</Text>
+            </View>
+
+            <Switch
+              value={profile.dark_mode}
+              onValueChange={(v) =>
+                setProfile({ ...profile, dark_mode: v })
+              }
+            />
+          </View>
+        </View>
+
+        {/* CARD CUENTA */}
+        <View style={styles.card}>
+          <Text style={styles.section}>Cuenta</Text>
+
+          {/* Cambiar contraseña */}
+          <TouchableOpacity style={styles.accountRow}>
+            <FontAwesome5 name="lock" size={20} color="#444" />
+            <Text style={styles.accountText}>Cambiar contraseña</Text>
+          </TouchableOpacity>
+
+          {/* Cerrar sesión */}
+          <TouchableOpacity
+            style={styles.logoutRow}
+            onPress={() => {
+              logout();
+              router.replace("/(auth)/LoginScreen");
+            }}
+          >
+            <MaterialIcons name="logout" size={22} color="#DD3282" />
+            <Text style={styles.logoutText}>Cerrar sesión</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* Botones inferior */}
+      {/* BOTONES ABAJO */}
       <View style={styles.footerButtons}>
         <TouchableOpacity
           style={[styles.btn, { backgroundColor: "#DD3282" }]}
@@ -161,15 +229,24 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
-  formCard: {
+
+  /* CARD */
+  card: {
     marginTop: 20,
     marginHorizontal: 20,
+    padding: 18,
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    elevation: 3,
   },
+
   section: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: "PoppinsBold",
-    marginBottom: 10,
+    marginBottom: 12,
   },
+
+  /* INPUTS */
   label: {
     fontFamily: "PoppinsSemiBold",
     marginTop: 10,
@@ -182,15 +259,57 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#F7F7F7",
   },
+
+  /* PREFERENCIAS */
+  prefRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  prefTitle: {
+    fontSize: 16,
+    fontFamily: "PoppinsSemiBold",
+  },
+  prefSub: {
+    fontSize: 12,
+    color: "#666",
+  },
+
+  /* CUENTA */
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  accountText: {
+    marginLeft: 12,
+    fontSize: 16,
+    fontFamily: "PoppinsSemiBold",
+  },
+  logoutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  logoutText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: "#DD3282",
+    fontFamily: "PoppinsBold",
+  },
+
+  /* FOOTER BUTTONS */
   footerButtons: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: "row",
     padding: 20,
-    backgroundColor: "#fff",
     gap: 10,
+    flexDirection: "row",
+    backgroundColor: "#fff",
   },
   btn: {
     flex: 1,
