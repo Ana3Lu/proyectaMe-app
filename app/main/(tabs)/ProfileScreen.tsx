@@ -18,6 +18,22 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const LEVELS = [
+  { level: 1, xpRequired: 0 },
+  { level: 2, xpRequired: 100 },
+  { level: 3, xpRequired: 200 },
+  { level: 4, xpRequired: 300 },
+  { level: 5, xpRequired: 500 },
+];
+
+function getCurrentLevel(xp: number) {
+  let lvl = 1;
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (xp >= LEVELS[i].xpRequired) lvl = LEVELS[i].level;
+  }
+  return lvl;
+}
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<any>(null);
@@ -28,22 +44,6 @@ export default function ProfileScreen() {
   const [level, setLevel] = useState(1);
   const [userAffinities, setUserAffinities] = useState<{ affinity: string }[]>([]);
   const [strengths, setStrengths] = useState<{ skill: string; score: number }[]>([]);
-
-  const LEVELS = [
-    { level: 1, xpRequired: 0 },
-    { level: 2, xpRequired: 100 },
-    { level: 3, xpRequired: 200 },
-    { level: 4, xpRequired: 300 },
-    { level: 5, xpRequired: 500 },
-  ];
-
-  const getCurrentLevel = (xp: number) => {
-    let lvl = 1;
-    for (let i = 0; i < LEVELS.length; i++) {
-      if (xp >= LEVELS[i].xpRequired) lvl = LEVELS[i].level;
-    }
-    return lvl;
-  };
 
   const getNextLevelXp = (currentLevel: number) => {
     const nextLevel = LEVELS.find(l => l.level === currentLevel + 1);

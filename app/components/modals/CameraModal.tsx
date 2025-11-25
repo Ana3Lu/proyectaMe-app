@@ -30,7 +30,7 @@ export default function CameraModal({ isVisible, onConfirm, onCancel }: CameraMo
 
     useEffect(() => {
         if (!permission?.granted) requestPermission();
-    }, [permission?.granted]);
+    }, [permission?.granted, requestPermission]);
 
     if (!permission) return <View />;
 

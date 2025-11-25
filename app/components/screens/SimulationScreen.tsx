@@ -208,15 +208,41 @@ export default function SimulationScreen() {
       saveSimulationResults(id!, finalPercentages);  
       markSimulationCompleted(id!);
 
-      // Registrar como simulación completada del usuario (para Profile)
       if (user?.id) {
+        // Registrar simulación completada
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id,
+          simulation_id: id,
+          created_at: new Date().toISOString()
+        });
+
+        // Guardar fortalezas
+        await supabase.from("simulations_results").insert({
+          user_id: user.id,
+          simulation_id: id,
+          skills: finalPercentages,
+          created_at: new Date().toISOString()
+        });
+
+        // Obtener XP actual
+        const { data: profileData, error: xpError } = await supabase
+          .from("profiles")
+          .select("points")
+          .eq("id", user.id)
+          .single();
+
+        if (xpError) {
+          console.error("Error obteniendo XP:", xpError);
+          return;
+        }
+
+        const currentXp = profileData?.points ?? 0;
+
+        // Sumar XP
         await supabase
-          .from("completed_simulations")
-          .insert({
-            user_id: user.id,
-            simulation_id: id,
-            created_at: new Date().toISOString()
-          });
+          .from("profiles")
+          .update({ points: currentXp + 50 })
+          .eq("id", user.id);
       }
 
       setChatHistory(prev => [

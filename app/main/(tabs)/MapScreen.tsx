@@ -17,14 +17,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
-  const { careers, completedSimulations } = useVocational();
+  const { careers, completedSimulations, userLevel } = useVocational();
   const [expanded, setExpanded] = useState(false);
 
   const available = careers; // simulaciones existentes
   const completed = completedSimulations.length;
   const totalUniverse = ALL_PROFESSIONS.length;
-
-  const { userLevel } = useVocational();
 
 const UNLOCK_BY_LEVEL = {
   1: 3,
