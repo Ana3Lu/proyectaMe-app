@@ -1,254 +1,286 @@
-import HeaderButton from "@/app/components/ui/HeaderButton";
-import { ProgressBar } from "@/app/components/ui/ProgressBar";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { AuthContext } from "@/contexts/AuthContext";
-import { useVocational } from "@/contexts/VocationalContext";
 import { supabase } from "@/utils/supabase";
 import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
-import { useFocusEffect } from '@react-navigation/native';
+import { Camera } from 'expo-camera';
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     Image,
     ScrollView,
     StyleSheet,
+    Switch,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CameraModal from "../components/modals/CameraModal";
+import HeaderButton from "../components/ui/HeaderButton";
+import SecondaryButton from "../components/ui/SecondaryButton";
 
-export default function ProfileScreen() {
+export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, getStreak } = useContext(AuthContext);
-  const { userLevel, levelUp, stats } = useVocational();
-  const [profile, setProfile] = useState<any>(null);
-  const [xp, setXp] = useState(0);
-  const [streak, setStreak] = useState(0);
+  const { user, logout } = useContext(AuthContext);
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    avatar_url: "",
+    education_level: "Bachillerato",
+    notifications_enabled: true,
+    dark_mode: false,
+  });
 
-  const [userAffinities, setUserAffinities] = useState<{ affinity: string }[]>([]);
-  const [strengths, setStrengths] = useState<{ skill: string; score: number }[]>([]);
-  const [simCount, setSimCount] = useState(0);
+  const [cameraVisible, setCameraVisible] = useState(false);
 
-  const LEVEL_XP = [0, 100, 200, 300, 500]; // XP requerido para cada nivel
+  useEffect(() => {
+    (async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+        alert('Se necesita permiso para usar la cámara');
+        }
+    })();
+    }, []);
 
-  // Cargar perfil y stats
-  const loadProfile = useCallback(async () => {
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    setProfile(data);
-    setXp(data?.points ?? 0);
-
-    const { count: sims } = await supabase
-      .from("completed_simulations")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
-
-    setSimCount(sims ?? 0);
-
-    const streakData = await getStreak();
-    if (streakData) setStreak(streakData.current_streak);
-  }, [user, getStreak]);
-
-  // Cargar afinidades y fortalezas
-  const loadAffinitiesAndStrengths = useCallback(async () => {
-    if (!user) return;
-
-    const { data: affinitiesData } = await supabase
-      .from("user_affinities")
-      .select("*")
-      .eq("user_id", user.id);
-
-    setUserAffinities(affinitiesData || []);
-
-    const { data: lastSimulation } = await supabase
-      .from("simulations_results")
-      .select("skills")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (lastSimulation?.skills) {
-      const strongSkills = Object.entries(lastSimulation.skills)
-        .filter(([_, score]) => typeof score === "number" && score >= 70)
-        .map(([skill, score]) => ({ skill, score: score as number }));
-      setStrengths(strongSkills);
-    }
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      if (data) setProfile(data);
+    };
+    loadProfile();
   }, [user]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProfile();
-      loadAffinitiesAndStrengths();
-    }, [loadProfile, loadAffinitiesAndStrengths])
-  );
-
-  // Calcular nivel actual y progreso
-  const currentLevel = LEVEL_XP.findIndex(x => xp < x);
-  const prevLevelXP = LEVEL_XP[currentLevel - 1] ?? 0;
-  const nextLevelXP = LEVEL_XP[currentLevel] ?? LEVEL_XP[LEVEL_XP.length - 1];
-  const progressPercent = ((xp - prevLevelXP) / (nextLevelXP - prevLevelXP)) * 100;
-
-  const categoryColor = (cat: string) => {
-    switch(cat) {
-      case "Salud": return "#FF7AA5";
-      case "Creatividad": return "#B56CFF";
-      case "Tecnología": return "#68D4FF";
-      case "Negocios": return "#FFC46E";
-      case "Ciencia": return "#7AD97A";
-      default: return "#D1D1D1";
-    }
+  const saveChanges = async () => {
+    await supabase.from("profiles").update(profile).eq("id", user?.id);
+    router.back();
   };
 
-  const memberSinceYear = profile?.created_at
-    ? new Date(profile.created_at).getFullYear()
-    : "—";
-
   return (
-    <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30 }}
+      >
         {/* HEADER */}
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
-            <Text style={styles.title}>Mi Perfil</Text>
-            <HeaderButton
-              onPress={() => router.push("/main/EditProfileScreen")}
-              icon="settings"
-              color="#fff"
-              backgroundColor="#7794F5"
+            <HeaderButton icon="arrow-back" onPress={() => router.back()} />
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text style={styles.headerTitle}>Configurar perfil</Text>
+            </View>
+          </View>
+
+          {/* AVATAR CENTRADO */}
+        <View style={styles.avatarWrapper}>
+        <View style={styles.avatarContainer}>
+            <Image
+            source={{
+                uri: profile.avatar_url || "../../assets/images/robby.png",
+            }}
+            style={styles.avatar}
+            />
+            <TouchableOpacity
+            style={styles.editIcon}
+            onPress={() => {
+                console.log("Abrir cámara");
+                setCameraVisible(true);
+                }}
+            >
+            <MaterialIcons name="photo-camera" size={24} color="#fff" />
+            </TouchableOpacity>
+        </View>
+        </View>
+        </LinearGradient>
+
+        {/* INFORMACIÓN PERSONAL */}
+        <View style={styles.card}>
+          <Text style={styles.section}>Información Personal</Text>
+          <Text style={styles.label}>Nombre</Text>
+          <TextInput
+            value={profile.name}
+            onChangeText={(v) => setProfile({ ...profile, name: v })}
+            style={styles.input}
+          />
+          <Text style={styles.label}>Correo</Text>
+          <TextInput
+            value={profile.email}
+            onChangeText={(v) => setProfile({ ...profile, email: v })}
+            style={styles.input}
+          />
+          <Text style={styles.label}>Nivel educativo</Text>
+          <TextInput
+            value={profile.education_level}
+            onChangeText={(v) =>
+              setProfile({ ...profile, education_level: v })
+            }
+            style={styles.input}
+          />
+        </View>
+
+        {/* PREFERENCIAS */}
+        <View style={styles.card}>
+          <Text style={styles.section}>Preferencias</Text>
+          <View style={styles.prefRow}>
+            <Feather name="bell" size={22} color="#59B5A2" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.prefTitle}>Notificaciones</Text>
+              <Text style={styles.prefSub}>Recibe recordatorios diarios</Text>
+
+              </View>
+            <Switch
+              value={profile.notifications_enabled}
+              onValueChange={(v) =>
+                setProfile({ ...profile, notifications_enabled: v })
+              }
             />
           </View>
 
-          {/* CARD DEL PERFIL */}
-          <View style={styles.profileCard}>
-            <View style={styles.profileRow}>
-              <Image
-                source={{ uri: profile?.avatar_url || "https://placehold.co/100x100" }}
-                style={styles.avatar}
-              />
-              <View style={{ marginLeft: 12, flex: 1 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={styles.name}>{profile?.name || "Cargando..."}</Text>
-                  <TouchableOpacity
-                    style={styles.premiumTag}
-                    onPress={() => router.push("/main/PremiumInfoScreen")}
-                  >
-                    <MaterialIcons name="star" size={16} color="#fff" />
-                    <Text style={styles.premiumText}>Premium</Text>
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.memberSince}>Miembro desde {memberSinceYear}</Text>
-                <Text style={styles.bio}>{profile?.bio || "Sin biografía"}</Text>
-                <Text style={styles.levelText}>Nivel {currentLevel}</Text>
+          <View style={styles.prefRow}>
+            <Feather name="moon" size={22} color="#130F40" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.prefTitle}>Modo oscuro</Text>
+              <Text style={styles.prefSub}>Activa el tema oscuro</Text>
               </View>
-            </View>
-
-            {/* PROGRESO */}
-            <View style={styles.progressBox}>
-              <View style={styles.progressRow}>
-                <Text style={styles.progressText}>Progreso al Nivel {currentLevel + 1}</Text>
-                <Text style={styles.progressDetail}>{xp} / {nextLevelXP} XP</Text>
-              </View>
-              <ProgressBar value={progressPercent} />
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* ESTADÍSTICAS */}
-        <View style={styles.statsBlock}>
-          <View style={styles.statsInner}>
-            <View style={styles.statItem}>
-              <FontAwesome5 name="brain" size={40} color="#7794F5" />
-              <Text style={styles.statNumber}>{simCount}</Text>
-              <Text style={[styles.statLabel, { color: "#7794F5" }]}>Simulaciones</Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialIcons name="emoji-events" size={48} color="#59B5A2" />
-              <Text style={styles.statNumber}>{xp}</Text>
-              <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Feather name="trending-up" size={45} color="#C89E00" />
-              <Text style={styles.statNumber}>{streak}</Text>
-              <Text style={[styles.statLabel, { color: "#C89E00" }]}>Racha</Text>
-            </View>
+            <Switch
+              value={profile.dark_mode}
+              onValueChange={(v) =>
+                setProfile({ ...profile, dark_mode: v })
+              }
+            />
           </View>
         </View>
 
-        {/* AFINIDADES */}
-        <Text style={styles.sectionTitle}>Mis Afinidades</Text>
+        {/* CUENTA */}
         <View style={styles.card}>
-          {userAffinities.length > 0 ? (
-            userAffinities.map((a, index) => (
-              <Text key={index} style={[styles.affRow, { color: categoryColor(a.affinity) }]}>
-                {a.affinity}
-              </Text>
-            ))
-          ) : (
-            <Text style={styles.affRow}>No hay afinidades registradas</Text>
-          )}
+          <Text style={styles.section}>Cuenta</Text>
+          <TouchableOpacity style={styles.accountRow}>
+            <FontAwesome5 name="lock" size={20} color="#7794F5" />
+            <Text style={styles.accountText}>Cambiar contraseña</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.logoutRow}
+            onPress={() => {
+              logout();
+              router.replace("/(auth)/LoginScreen");
+            }}
+          >
+            <MaterialIcons name="logout" size={22} color="#DD3282" />
+            <Text style={styles.logoutText}>Cerrar sesión</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* FORTALEZAS */}
-        {strengths.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Fortalezas</Text>
-            <View style={styles.card}>
-              {strengths.map((s, index) => (
-                <Text key={index} style={styles.affRow}>
-                  {s.skill} — {s.score}%
-                </Text>
-              ))}
-            </View>
-          </>
-        )}
+        {/* BOTONES DE ACCIÓN */}
+        <View style={styles.footerButtons}>
+          <PrimaryButton
+            title="Guardar cambios"
+            onPress={saveChanges}
+          />
+          <SecondaryButton
+            title="Cancelar"
+            onPress={() => router.back()}
+          /></View>
 
-        {/* BOTÓN GOALS */}
-        <TouchableOpacity
-          style={styles.goalsButton}
-          onPress={() => router.push("../GoalsScreen")}
-        >
-          <Text style={styles.goalsText}>Establecer metas</Text>
-        </TouchableOpacity>
+        <View style={{ height: 100 }} />
+        </ScrollView>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
+      {/* CAMERA MODAL */}
+      <CameraModal
+        isVisible={cameraVisible}
+        onCancel={() => setCameraVisible(false)}
+        onConfirm={(url) => {
+          setProfile({ ...profile, avatar_url: url });
+          setCameraVisible(false);
+        }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingTop: 25, paddingHorizontal: 25, paddingBottom: 15, borderBottomLeftRadius: 25, borderBottomRightRadius: 25 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  title: { color: "#fff", fontSize: 32, fontFamily: "PoppinsBold" },
-  profileCard: { backgroundColor: "#fff", padding: 20, borderRadius: 20, elevation: 3, borderWidth: 1, borderColor: "#eee" },
-  profileRow: { flexDirection: "row", alignItems: "center" },
-  avatar: { width: 90, height: 90, borderRadius: 50, borderWidth: 3, borderColor: "#7794F5" },
-  name: { fontSize: 22, fontFamily: "PoppinsBold" },
-  premiumTag: { flexDirection: "row", backgroundColor: "#DD3282", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, alignItems: "center" },
-  premiumText: { color: "#fff", marginLeft: 4, fontSize: 12, fontFamily: "PoppinsBold" },
-  memberSince: { marginTop: 4, color: "#555" },
-  bio: { marginTop: 4, color: "#333" },
-  levelText: { marginTop: 6, fontSize: 16, fontFamily: "PoppinsBold", color: "#2F32CD" },
-  progressBox: { marginTop: 20 },
-  progressRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  progressText: { fontFamily: "PoppinsMedium", fontSize: 16 },
-  progressDetail: { fontFamily: "PoppinsMedium", fontSize: 16 },
-  statsBlock: { marginTop: 10, flexDirection: "row", justifyContent: "center" },
-  statsInner: { backgroundColor: "#fff", borderRadius: 20, borderWidth: 1, borderColor: "#D9D9D9", padding: 15, flexDirection: "row", justifyContent: "space-around", marginHorizontal: 20, marginBottom: 10, alignItems: "center" },
-  statItem: { alignItems: "center", flexDirection: "column", marginHorizontal: 10 },
-  statNumber: { fontSize: 28, fontFamily: "PoppinsBold", marginTop: 6 },
-  statLabel: { fontSize: 16, fontWeight: "bold", marginTop: -2 },
-  sectionTitle: { paddingHorizontal: 25, marginTop: 20, marginBottom: 10, fontSize: 22, fontFamily: "PoppinsBold", color: "#130F40" },
-  card: { backgroundColor: "#fff", marginHorizontal: 20, marginBottom: 10, padding: 20, borderRadius: 20, elevation: 3, borderWidth: 1, borderColor: "#eee" },
-  affRow: { fontSize: 16, marginVertical: 4 },
-  goalsButton: { marginHorizontal: 20, marginTop: 20, padding: 15, backgroundColor: "#DD3282", borderRadius: 20, alignItems: "center" },
-  goalsText: { color: "#fff", fontFamily: "PoppinsBold", fontSize: 18 },
+  header: {
+    padding: 25,
+    paddingTop: 45,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 32,
+    color: "#fff",
+    fontFamily: "PoppinsBold",
+  },
+  avatarWrapper: {
+  marginTop: 15,
+  alignItems: "center",
+  justifyContent: "center",
+},
+avatarContainer: {
+  position: "relative",
+},
+avatar: {
+  width: 120,
+  height: 120,
+  borderRadius: 70,
+  borderWidth: 4,
+  borderColor: "#fff",
+  backgroundColor: "#eee",
+  elevation: 5,
+},
+editIcon: {
+  position: "absolute",
+  bottom: 0,
+  right: 0,
+  transform: [{ translateX: 10 }, { translateY: 10 }], // Ajusta este valor para que quede pegadito
+  backgroundColor: "#DD3282",
+  padding: 10,
+  borderRadius: 30,
+  elevation: 5,
+},
+  card: {
+    marginTop: 20,
+    marginHorizontal: 20,
+    padding: 18,
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    elevation: 3,
+  },
+  section: { fontSize: 18, fontFamily: "PoppinsBold", marginBottom: 12 },
+  label: { fontFamily: "PoppinsSemiBold", marginTop: 10, marginBottom: 4 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#F7F7F7",
+  },
+  prefRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12 },
+  prefTitle: { fontSize: 16, fontWeight: "500", color: "#130F40" },
+  prefSub: { fontSize: 12, color: "#666" },
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  accountText: { marginLeft: 12, fontSize: 16, fontWeight: "bold", color: "#7794F5" },
+  logoutRow: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
+  logoutText: { marginLeft: 12, fontSize: 16, color: "#DD3282", fontFamily: "PoppinsBold" },
+  footerButtons: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    gap: 12, // espaciado entre los botones
+  },
 });
