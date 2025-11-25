@@ -1,6 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -14,6 +16,23 @@ import HeaderButton from "../components/ui/HeaderButton";
 import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function ResetScreen() {
+
+  const [email, setEmail] = useState("");
+
+  const handleReset = () => {
+    if (!email.includes("@") || !email.includes(".")) {
+      Alert.alert("Correo inválido", "Por favor ingresa un correo válido.");
+      return;
+    }
+
+    // Simulación de envío de correo
+    Alert.alert(
+      "¡Instrucciones enviadas!",
+      `Si el correo ${email} está registrado, recibirás un mensaje para restablecer tu contraseña.`,
+      [{ text: "OK", onPress: () => router.back() }]
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -51,11 +70,13 @@ export default function ResetScreen() {
               placeholder="tu@email.com"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
+              value={email}
+              onChangeText={setEmail}
             />
 
             <PrimaryButton 
               title="Enviar instrucciones"
-              onPress={() => {}}
+              onPress={handleReset}
               fontSize={16}
             />
           </View>
@@ -91,11 +112,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     alignSelf: "flex-start",
   },
-  icon: {
+  iconCircle: {
     width: 90,
     height: 90,
-    marginTop: 20,
-    marginBottom: 10,
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
@@ -111,14 +134,6 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsRegular",
     marginVertical: 10,
     marginBottom: 20,
-  },
-  iconCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
   },
   formCard: {
     width: "100%",

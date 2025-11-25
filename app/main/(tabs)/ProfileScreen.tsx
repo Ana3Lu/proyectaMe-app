@@ -153,7 +153,7 @@ export default function ProfileScreen() {
           <View style={styles.headerRow}>
             <Text style={styles.title}>Mi Perfil</Text>
             <HeaderButton
-              onPress={() => router.push("/main/EditProfileScreen")}
+              onPress={() => router.push("/main/editProfileScreen")}
               icon="settings"
               color="#fff"
               backgroundColor="#7794F5"

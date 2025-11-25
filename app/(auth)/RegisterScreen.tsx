@@ -2,6 +2,7 @@ import { AuthContext } from "@/contexts/AuthContext";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -24,17 +25,29 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleRegister = async () => {
-    if (!name || !email || !password) return;
+    if (!name || !email || !password) {
+      Alert.alert("Campos incompletos", "Por favor llena todos los campos.");
+      return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      Alert.alert("Correo inválido", "Ingresa un correo válido.");
+      return;
+    }
 
     if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
+      Alert.alert("Error", "Las contraseñas no coinciden.");
       return;
     }
 
     const ok = await register(name, email, password);
 
     if (ok) {
-      router.push("/LoginScreen");
+      Alert.alert(
+        "Registro exitoso 🎉",
+        "Tu cuenta ha sido creada correctamente.",
+        [{ text: "OK", onPress: () => router.push("/LoginScreen") }]
+      );
     }
   };
 
