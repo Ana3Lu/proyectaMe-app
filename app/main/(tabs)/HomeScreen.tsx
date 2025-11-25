@@ -1,5 +1,4 @@
 import BookCard from "@/app/components/ui/BookCard";
-import HeaderButton from "@/app/components/ui/HeaderButton";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { SIMULATIONS } from "@/constants/simulations";
 import { AuthContext } from "@/contexts/AuthContext";
@@ -127,10 +126,6 @@ export default function HomeScreen() {
 
                 </View>  
                 </LinearGradient>
-
-                <View style={{ position: "absolute", top: insets.top + 10, left: 15 }}>
-                  <HeaderButton icon="arrow-back" onPress={() => router.back()} />
-                </View>
 
                 {/* Bloque de estadísticas */}
                 <View style={styles.statsBlock}>

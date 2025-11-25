@@ -1,6 +1,7 @@
 import HeaderButton from "@/app/components/ui/HeaderButton";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
 import { AuthContext } from "@/contexts/AuthContext";
+import { useVocational } from "@/contexts/VocationalContext";
 import { supabase } from "@/utils/supabase";
 import { Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
@@ -50,25 +51,26 @@ export default function ProfileScreen() {
     return nextLevel ? nextLevel.xpRequired : LEVELS[LEVELS.length - 1].xpRequired;
   };
 
-  const loadStats = useCallback(async () => {
-    if (!user) return;
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("points")
-      .eq("id", user.id)
-      .single();
+  const { completedSimulations } = useVocational();
 
-    const userXp = profileData?.points ?? 0;
-    setXp(userXp);
-    setLevel(getCurrentLevel(userXp));
+const loadStats = useCallback(async () => {
+  if (!user) return;
 
-    const { count: sims } = await supabase
-      .from("completed_simulations")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
+  // XP (igual que antes)
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("id", user.id)
+    .single();
 
-    setSimCount(sims ?? 0);
-  }, [user]);
+  const userXp = profileData?.points ?? 0;
+  setXp(userXp);
+  setLevel(getCurrentLevel(userXp));
+
+  // Simulaciones completadas (MISMO SISTEMA QUE EL MAPA)
+  setSimCount(completedSimulations.length);
+
+}, [user, completedSimulations]);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -78,6 +80,9 @@ export default function ProfileScreen() {
       .select("*")
       .eq("id", user.id)
       .single();
+
+    console.log(data);
+    console.log(data?.avatar_url);
 
     setProfile(data);
     loadStats();

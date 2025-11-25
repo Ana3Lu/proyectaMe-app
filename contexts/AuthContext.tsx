@@ -9,7 +9,7 @@ export interface Profile {
   phone?: string;
   gender?: string;
   points?: number;
-  avatar_url?: string;
+  avatar_url?: string | null;
   role?: string;
   plan_type?: string;
   plan_expires_at?: string;
@@ -30,8 +30,17 @@ interface AuthContextProps {
 
 export const AuthContext = createContext({} as AuthContextProps);
 
-// Para React Native, usar require para la imagen local
-const DEFAULT_AVATAR = require('../assets/images/robby.png'); 
+// Default avatar require
+const DEFAULT_AVATAR = require("../assets/images/robby.png");
+
+// Helper to sanitize avatar
+const sanitizeAvatar = (avatar: any): string | null => {
+  if (!avatar) return null;
+  if (typeof avatar !== "string") return null;
+  const val = avatar.trim();
+  if (!val || val === "null" || val === "undefined") return null;
+  return val;
+};
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<Profile | null>(null);
@@ -44,13 +53,11 @@ export const AuthProvider = ({ children }: any) => {
       .select("current_streak, last_activity")
       .eq("user_id", user.id)
       .single();
-    if (error) {
-      console.error("Error fetching streak:", error.message);
-      return null;
-    }
+    if (error) return null;
     return data;
   }, [user?.id]);
 
+  // Load user on app start
   useEffect(() => {
     const loadUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -60,10 +67,11 @@ export const AuthProvider = ({ children }: any) => {
           .select("*")
           .eq("id", session.user.id)
           .single();
+
         if (profileData) {
           setUser({
             ...profileData,
-            avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+            avatar_url: sanitizeAvatar(profileData.avatar_url)
           });
         }
       }
@@ -78,10 +86,11 @@ export const AuthProvider = ({ children }: any) => {
             .select("*")
             .eq("id", session.user.id)
             .single();
+
           if (profileData) {
             setUser({
               ...profileData,
-              avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+              avatar_url: sanitizeAvatar(profileData.avatar_url)
             });
           }
         } else {
@@ -93,58 +102,52 @@ export const AuthProvider = ({ children }: any) => {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
+  // LOGIN
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error || !data.user) {
-        alert(error?.message || "Login failed");
-        return false;
-      }
+      if (error || !data.user) return false;
 
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", data.user.id)
         .single();
 
-      if (profileError || !profileData) {
+      if (!profileData) {
         setUser({
           id: data.user.id,
           email: data.user.email!,
           name: data.user.email?.split("@")[0] || "Usuario",
           points: 0,
           bio: "hello!",
-          avatar_url: DEFAULT_AVATAR,
+          avatar_url: null,
         });
       } else {
         setUser({
           ...profileData,
-          avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : DEFAULT_AVATAR,
+          avatar_url: sanitizeAvatar(profileData.avatar_url)
         });
       }
 
       await supabase.rpc("update_user_streak", { p_user_id: data.user.id });
-
       return true;
-    } catch (err) {
-      console.error(err);
+    } catch {
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // REGISTER
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error || !data.user) {
-        alert(error?.message || "Registration failed");
-        return false;
-      }
+      if (error || !data.user) return false;
 
-      const { error: profileError } = await supabase
+      await supabase
         .from("profiles")
         .insert({
           id: data.user.id,
@@ -152,32 +155,20 @@ export const AuthProvider = ({ children }: any) => {
           email: email.trim(),
           points: 0,
           bio: "hello!",
-          avatar_url: DEFAULT_AVATAR,
+          avatar_url: null,
           plan_type: "free",
         });
 
-      if (profileError) {
-        alert(profileError.message);
-        return false;
-      }
-
-      setUser({
-        id: data.user.id,
-        name,
-        email,
-        points: 0,
-        avatar_url: DEFAULT_AVATAR,
-      });
-
+      setUser({ id: data.user.id, name, email, points: 0, avatar_url: null });
       return true;
-    } catch (err) {
-      console.error(err);
+    } catch {
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // UPDATE PROFILE
   const updateProfile = async (profileData: Partial<Profile>) => {
     if (!user?.id) return false;
     setIsLoading(true);
@@ -192,10 +183,11 @@ export const AuthProvider = ({ children }: any) => {
 
       if (error) throw error;
 
-      setUser(prev => prev ? { ...prev, ...profileData, avatar_url: profileData.avatar_url?.trim() !== "" ? profileData.avatar_url : prev.avatar_url || DEFAULT_AVATAR } : prev);
+      const nextAvatar = sanitizeAvatar(profileData.avatar_url) ?? user.avatar_url;
+
+      setUser(prev => prev ? { ...prev, ...profileData, avatar_url: nextAvatar } : prev);
       return true;
-    } catch (err) {
-      console.error("Update profile error:", err);
+    } catch {
       return false;
     } finally {
       setIsLoading(false);
@@ -208,11 +200,7 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   const resetPasswordSimulated = async (email: string) => {
-    if (!email.includes("@")) {
-      alert("Invalid email");
-      return false;
-    }
-    alert(`If an account exists with ${email}, an email will be sent.`);
+    if (!email.includes("@")) return false;
     return true;
   };
 
