@@ -1,7 +1,7 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
 
-interface Profile {
+export interface Profile {
   id: string;
   name: string;
   email: string;
@@ -12,7 +12,8 @@ interface Profile {
   avatar_url?: string;
   role?: string;
   plan_type?: string;
-  plan_expiration?: string;
+  plan_expires_at?: string;
+  created_at?: string;
 }
 
 interface AuthContextProps {
@@ -20,8 +21,8 @@ interface AuthContextProps {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
-  updateProfile: (profileData: Partial<any>) => Promise<boolean>;
-  setUser: (user: any | null) => void;
+  updateProfile: (profileData: Partial<Profile>) => Promise<boolean>;
+  setUser: (user: Profile | null) => void;
   logout: () => Promise<void>;
   resetPasswordSimulated: (email: string) => Promise<boolean>;
   getStreak: () => Promise<any>;
@@ -30,126 +31,108 @@ interface AuthContextProps {
 export const AuthContext = createContext({} as AuthContextProps);
 
 export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState(null as any);
+  const [user, setUser] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getStreak = async () => {
+  // Get user streak
+  const getStreak = useCallback(async () => {
     if (!user?.id) return null;
-
     const { data, error } = await supabase
       .from("user_streaks")
       .select("current_streak, last_activity")
       .eq("user_id", user.id)
       .single();
-
     if (error) {
-      console.log("Error fetching streak:", error.message);
+      console.error("Error fetching streak:", error.message);
       return null;
     }
-
     return data;
-  };
+  }, [user?.id]);
 
-  // Keep session active
+  // Load user session
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      //console.log("Session:", session);
+    const loadUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from("profiles")
-          .select("id, name, email, avatar_url, bio, phone, gender, points, plan_type, plan_expires_at")
+          .select("*")
           .eq("id", session.user.id)
           .single();
-        if (data) setUser(data);
+        if (profileData) setUser(profileData);
       }
-    });
+    };
+    loadUser();
 
     const { data: subscription } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          const { data } = await supabase
+          const { data: profileData } = await supabase
             .from("profiles")
-            .select()
+            .select("*")
             .eq("id", session.user.id)
             .single();
-          if (data) setUser(data);
+          if (profileData) setUser(profileData);
         } else {
           setUser(null);
         }
       }
     );
 
-    return () => {
-      subscription.subscription.unsubscribe();
-    };
+    return () => subscription.subscription.unsubscribe();
   }, []);
 
-  // Login
+  // LOGIN
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.log("❌ Login error:", error.message);
-        alert("Login failed: " + (error.message || "Invalid credentials"));
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error || !data.user) {
+        alert(error?.message || "Login failed");
         return false;
       }
 
-      if (data.user) {
-        console.log("✅ Login success, loading profile...");
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select('*')
-          .eq("id", data.user.id)
-          .single();
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
 
-        if (profileError) {
-          console.error("❌ Profile not found for this user:", profileError.message);
-          // Use basic profile if none exists
-          setUser({
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.email?.split('@')[0] || 'Unknown',
-            bio: "hello!",
-            phone: "",
-            gender: "",
-            points: 0
-          });
-        } else {
-          setUser(profile);
-        }
-
-        // Actualizar racha diaria
-        await supabase.rpc("update_user_streak", {
-          p_user_id: data.user.id
+      if (profileError || !profileData) {
+        // fallback simple profile
+        setUser({
+          id: data.user.id,
+          email: data.user.email!,
+          name: data.user.email?.split("@")[0] || "Usuario",
+          points: 0,
+          bio: "hello!",
         });
-
-        return true;
+      } else {
+        setUser(profileData);
       }
-      return false;
+
+      // Update streak
+      await supabase.rpc("update_user_streak", { p_user_id: data.user.id });
+
+      return true;
     } catch (err) {
-      console.log("Unexpected login error:", err);
+      console.error(err);
       return false;
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  // Register (create user + profile)
+  // REGISTER
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error || !data.user) {
-        alert(error?.message);
+        alert(error?.message || "Registration failed");
         return false;
       }
 
-      // Crear perfil manualmente desde la app
       const { error: profileError } = await supabase
         .from("profiles")
         .insert({
@@ -167,7 +150,6 @@ export const AuthProvider = ({ children }: any) => {
       }
 
       setUser({ id: data.user.id, name, email, points: 0 });
-      alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
       return true;
     } catch (err) {
       console.error(err);
@@ -177,76 +159,46 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  // Update profile
-  const updateProfile = async (profileData: Partial<any>) => {
-    if (!user?.id) {
-      alert("No user logged in.");
-      return false;
-    }
-
+  // UPDATE PROFILE
+  const updateProfile = async (profileData: Partial<Profile>) => {
+    if (!user?.id) return false;
     setIsLoading(true);
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ ...profileData, updated_at: new Date().toISOString, name: name.trim() })
+        .update({ ...profileData, updated_at: new Date().toISOString() })
         .eq("id", user.id);
+      if (error) throw error;
 
-      if (error) {
-        console.error("❌ Update profile error:", error.message);
-        throw new Error(error.message);
-      }
-
-      setUser({ ...user, ...profileData });
+      setUser(prev => prev ? { ...prev, ...profileData } : prev);
       return true;
     } catch (err) {
-      console.error("Unexpected update profile error:", err);
+      console.error("Update profile error:", err);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Logout
+  // LOGOUT
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
   };
 
-  // Reset password 
+  // SIMULATED PASSWORD RESET
   const resetPasswordSimulated = async (email: string) => {
-    setIsLoading(true);
-    try {
-        // Simulate password reset
-        if (!email || !email.includes("@") || !email.includes(".")) {
-          alert("Please provide an email address.");
-          return false;
-        }
-        console.log(`Simulating password reset for: ${email}`);
-        alert(
-        `If exists an account with ${email}, we will send you an email to reset your password...`
-        );
-        return true;
-    } catch (err) {
-        console.error("Unexpected reset password error:", err);
-        return false;
-    } finally {
-        setIsLoading(false);
+    if (!email.includes("@")) {
+      alert("Invalid email");
+      return false;
     }
+    alert(`If an account exists with ${email}, an email will be sent.`);
+    return true;
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        register,
-        updateProfile,
-        setUser,
-        logout,
-        resetPasswordSimulated,
-        getStreak
-      }}
+      value={{ user, isLoading, login, register, updateProfile, setUser, logout, resetPasswordSimulated, getStreak }}
     >
       {children}
     </AuthContext.Provider>
