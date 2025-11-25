@@ -4,15 +4,29 @@ interface FilterChipProps {
   label: string;
   active: boolean;
   onPress: () => void;
+  activeColor?: string;
+  activeTextColor?: string;
+  inactiveColor?: string;
+  inactiveTextColor?: string;
+  style?: any
 }
 
-export default function FilterChip({ label, active, onPress }: FilterChipProps) {
+export default function FilterChip({
+  label,
+  active,
+  onPress,
+  activeColor = "#fff",
+  activeTextColor = "#2F32CD", 
+  inactiveColor = "rgba(255,255,255,0.3)", 
+  inactiveTextColor = "#fff", 
+  style
+}: FilterChipProps) {
   return (
     <TouchableOpacity 
-      style={[styles.chip, active ? styles.activeChip : null]} 
+      style={[styles.chip, style, { backgroundColor: active ? activeColor : inactiveColor }]} 
       onPress={onPress}
     >
-      <Text style={[styles.text, active ? styles.activeText : null]}>
+      <Text style={[styles.text, { color: active ? activeTextColor : inactiveTextColor }]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -21,22 +35,12 @@ export default function FilterChip({ label, active, onPress }: FilterChipProps) 
 
 const styles = StyleSheet.create({
   chip: {
-    paddingVertical: 4,
-    paddingTop: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    marginRight: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    marginRight: 10,
   },
   text: {
-    fontFamily: "PoppinsRegular",
-    color: "#fff",
-  },
-  activeChip: {
-    backgroundColor: "#fff",
-  },
-  activeText: {
-    color: "#2F32CD",
     fontFamily: "PoppinsBold",
   }
 });

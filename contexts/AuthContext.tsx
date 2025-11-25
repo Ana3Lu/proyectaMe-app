@@ -161,24 +161,29 @@ export const AuthProvider = ({ children }: any) => {
 
   // UPDATE PROFILE
   const updateProfile = async (profileData: Partial<Profile>) => {
-    if (!user?.id) return false;
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ ...profileData })
-        .eq("id", user.id);
-      if (error) throw error;
+  if (!user?.id) return false;
+  setIsLoading(true);
+  try {
+    const dataToUpdate = { ...profileData };
+    delete (dataToUpdate as any).updated_at; // evita conflicto con PostgREST
 
-      setUser(prev => prev ? { ...prev, ...profileData } : prev);
-      return true;
-    } catch (err) {
-      console.error("Update profile error:", err);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const { error } = await supabase
+      .from("profiles")
+      .update(dataToUpdate)
+      .eq("id", user.id);
+
+    if (error) throw error;
+
+    setUser(prev => prev ? { ...prev, ...profileData } : prev);
+    return true;
+  } catch (err) {
+    console.error("Update profile error:", err);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // LOGOUT
   const logout = async () => {

@@ -2,14 +2,19 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface PrimaryButtonProps {
   title: string;
-  onPress: () => void;
+  onPress?: () => void;
   fontSize?: number;
+  disabled?: boolean;
 }
 
-export default function PrimaryButton({ title, onPress, fontSize = 16 }: PrimaryButtonProps) {
+export default function PrimaryButton({ title, onPress, fontSize = 16, disabled = false }: PrimaryButtonProps) {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={[styles.text, { fontSize }]}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.button, disabled && styles.buttonDisabled]}
+      onPress={disabled ? undefined : onPress}
+      activeOpacity={disabled ? 1 : 0.7}
+    >
+      <Text style={[styles.text, { fontSize }, disabled && styles.textDisabled]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -28,8 +33,15 @@ const styles = StyleSheet.create({
     elevation: 5,
     paddingTop: 14,
   },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+    shadowOpacity: 0,
+  },
   text: {
     color: "#fff",
     fontFamily: "PoppinsBold",
+  },
+  textDisabled: {
+    color: "#888",
   },
 });
