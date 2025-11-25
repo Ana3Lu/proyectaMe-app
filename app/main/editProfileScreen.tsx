@@ -62,7 +62,7 @@ export default function EditProfileScreen() {
     router.back();
   };
 
-  console.log("Avatar URL:", profile?.avatar_url);
+  //console.log("Avatar URL:", profile?.avatar_url);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
@@ -93,7 +93,7 @@ export default function EditProfileScreen() {
             <TouchableOpacity
             style={styles.editIcon}
             onPress={() => {
-                console.log("Abrir cámara");
+                //console.log("Abrir cámara");
                 setCameraVisible(true);
                 }}
             >

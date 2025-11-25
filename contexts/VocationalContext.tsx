@@ -1,6 +1,5 @@
 import { SIMULATIONS } from "@/constants/simulations";
-import { supabase } from "@/utils/supabase";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 
 const CONSTELLATION_POSITIONS = [
@@ -25,13 +24,10 @@ export interface CareerNode {
 interface VocationalContextProps {
   careers: CareerNode[];
   updateCareerAffinity: (id: string, score: number) => Promise<void>;
-
   completedSimulations: string[];
   markSimulationCompleted: (id: string) => Promise<void>;
-
   userLevel: number;
   levelUp: () => void;
-
   stats: {
     completed: number;
     total: number;
@@ -43,8 +39,13 @@ const VocationalContext = createContext<VocationalContextProps | null>(null);
 export const VocationalProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useContext(AuthContext);
 
+  // 🔹 Lista de simulaciones permitidas según plan
+  const allowedSimulations = user?.plan_type === "premium"
+    ? SIMULATIONS
+    : SIMULATIONS.slice(0, 5); // Free solo las primeras 5
+
   const [careers, setCareers] = useState<CareerNode[]>(
-    SIMULATIONS.map((sim, index) => ({
+    allowedSimulations.map((sim, index) => ({
       id: sim.id,
       name: sim.title,
       category: sim.category,
@@ -58,70 +59,50 @@ export const VocationalProvider = ({ children }: { children: ReactNode }) => {
   const [userLevel, setUserLevel] = useState(1);
 
   const MAX_LEVEL = 4;
+  const levelUp = () => setUserLevel(prev => Math.min(prev + 1, MAX_LEVEL));
 
-  const levelUp = () => {
-    setUserLevel(prev => Math.min(prev + 1, MAX_LEVEL));
-  };
-
-  // 🔥 GUARDA AFINIDAD EN SUPABASE
   const updateCareerAffinity = async (id: string, score: number) => {
     setCareers(prev =>
-      prev.map(c => (c.id === id ? { ...c, affinity: Math.min(100, score) } : c))
+      prev.map(c => (c.id === id ? { ...c, affinity: score } : c))
     );
-
-    if (!user) return;
-
-    await supabase.from("careers_affinity").upsert({
-      user_id: user.id,
-      career_id: id,
-      affinity: score
-    });
   };
 
-  // GUARDA SIMULACIÓN COMPLETADA EN SUPABASE
   const markSimulationCompleted = async (id: string) => {
-    if (!user) return;
-
-    setCompletedSimulations(prev => {
-      if (prev.includes(id)) return prev;
-
-      const updated = [...prev, id];
-
-      if (updated.length % 3 === 0) levelUp();
-
-      return updated;
-    });
-
-    await supabase.from("completed_simulations").insert({
-      user_id: user.id,
-      simulation_id: id
-    });
+    setCompletedSimulations(prev => [...prev, id]);
   };
 
   const stats = {
     completed: completedSimulations.length,
-    total: careers.length,
+    total: allowedSimulations.length,
   };
 
+  // 🔹 Actualizamos nodos si cambia el usuario (ej: free -> premium)
+  useEffect(() => {
+    const updatedCareers = (user?.plan_type === "premium" ? SIMULATIONS : SIMULATIONS.slice(0, 5))
+      .map((sim, index) => ({
+        id: sim.id,
+        name: sim.title,
+        category: sim.category,
+        affinity: 0,
+        x: CONSTELLATION_POSITIONS[index % CONSTELLATION_POSITIONS.length].x,
+        y: CONSTELLATION_POSITIONS[index % CONSTELLATION_POSITIONS.length].y,
+      }));
+    setCareers(updatedCareers);
+  }, [user?.plan_type]);
+
   return (
-    <VocationalContext.Provider
-      value={{
-        careers,
-        updateCareerAffinity,
-        completedSimulations,
-        markSimulationCompleted,
-        stats,
-        userLevel,
-        levelUp,
-      }}
-    >
+    <VocationalContext.Provider value={{
+      careers,
+      updateCareerAffinity,
+      completedSimulations,
+      markSimulationCompleted,
+      userLevel,
+      levelUp,
+      stats,
+    }}>
       {children}
     </VocationalContext.Provider>
   );
 };
 
-export const useVocational = () => {
-  const ctx = useContext(VocationalContext);
-  if (!ctx) throw new Error("useVocational debe usarse dentro de VocationalProvider");
-  return ctx;
-};
+export const useVocational = () => useContext(VocationalContext)!;

@@ -1,10 +1,11 @@
 import FilterChip from "@/app/components/ui/FilterChip";
 import HeaderButton from "@/app/components/ui/HeaderButton";
 import { SIMULATIONS } from "@/constants/simulations";
+import { AuthContext } from "@/contexts/AuthContext";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,9 +15,16 @@ export default function SimulationsScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
   const categories = ["Todas", "Salud", "Creatividad", "Tecnología", "Negocios", "Ciencia"];
 
-  const filtered = selectedCategory === "Todas"
+  const { user } = useContext(AuthContext);
+
+  // Filtra simulaciones según plan
+  const availableSimulations = user?.plan_type === "premium"
     ? SIMULATIONS
-    : SIMULATIONS.filter(sim => sim.category === selectedCategory);
+    : SIMULATIONS.slice(0, 5);
+
+  const filtered = selectedCategory === "Todas"
+    ? availableSimulations
+    : availableSimulations.filter(sim => sim.category === selectedCategory);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>

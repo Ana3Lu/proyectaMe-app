@@ -34,15 +34,15 @@ export const SIMULATIONS: SimulationMeta[] = [
     topicPrompt: "Simulación sobre dilemas científicos en un laboratorio."
   },
   {
-    id: "enfermeria",
-    title: "Enfermero",
-    desc: "Vive un día en la vida de un enfermero en un hospital ocupado.",
-    category: "Salud",
-    color: "#6FD8C6",
-    time: "5–7 min",
-    users: "2.004",
-    stars: "4.4",
-    topicPrompt: "Simulación sobre el trabajo de un enfermero en un hospital."  
+    id: "dev",
+    title: "Desarrollador de Software",
+    desc: "Toma decisiones técnicas y creativas en un proyecto digital.",
+    category: "Tecnología",
+    color: "#BD9D1E",
+    time: "6–8 min",
+    users: "5.120",
+    stars: "4.8",
+    topicPrompt: "Simulación sobre decisiones en el desarrollo de aplicaciones web y móviles."
   },
   {
     id: "diseno",
@@ -89,15 +89,15 @@ export const SIMULATIONS: SimulationMeta[] = [
     topicPrompt: "Simulación sobre el trabajo de un fotógrafo en una sesión fotográfica."
   },
   {
-    id: "dev",
-    title: "Desarrollador de Software",
-    desc: "Toma decisiones técnicas y creativas en un proyecto digital.",
-    category: "Tecnología",
-    color: "#BD9D1E",
-    time: "6–8 min",
-    users: "5.120",
-    stars: "4.8",
-    topicPrompt: "Simulación sobre decisiones en el desarrollo de aplicaciones web y móviles."
+    id: "enfermeria",
+    title: "Enfermero",
+    desc: "Vive un día en la vida de un enfermero en un hospital ocupado.",
+    category: "Salud",
+    color: "#6FD8C6",
+    time: "5–7 min",
+    users: "2.004",
+    stars: "4.4",
+    topicPrompt: "Simulación sobre el trabajo de un enfermero en un hospital."  
   },
   {
     id: "ciberseguridad",
