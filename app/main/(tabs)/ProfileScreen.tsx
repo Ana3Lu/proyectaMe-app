@@ -37,7 +37,7 @@ export default function ProfileScreen() {
           <View style={styles.headerRow}>
             <Text style={styles.title}>Mi Perfil</Text>
 
-            <TouchableOpacity onPress={() => router.push("/main/editProfileScreen")}>
+            <TouchableOpacity onPress={() => router.push("../EditProfileScreen")}>
               <MaterialIcons name="settings" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
           <Text style={styles.affRow}>🟣 Creatividad — 54%</Text>
         </View>
 
-        <TouchableOpacity style={styles.goalsButton}>
+        <TouchableOpacity style={styles.goalsButton} onPress={() => router.push("../GoalsScreen")}>
           <Text style={styles.goalsText}>Establecer metas</Text>
         </TouchableOpacity>
 

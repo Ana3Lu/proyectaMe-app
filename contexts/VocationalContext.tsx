@@ -1,5 +1,7 @@
 import { SIMULATIONS } from "@/constants/simulations";
+import { supabase } from "@/utils/supabase";
 import { createContext, ReactNode, useContext, useState } from "react";
+import { AuthContext } from "./AuthContext";
 
 const CONSTELLATION_POSITIONS = [
   { x: 50, y: 10 },
@@ -22,10 +24,10 @@ export interface CareerNode {
 
 interface VocationalContextProps {
   careers: CareerNode[];
-  updateCareerAffinity: (id: string, score: number) => void;
+  updateCareerAffinity: (id: string, score: number) => Promise<void>;
 
   completedSimulations: string[];
-  markSimulationCompleted: (id: string) => void;
+  markSimulationCompleted: (id: string) => Promise<void>;
 
   userLevel: number;
   levelUp: () => void;
@@ -39,6 +41,8 @@ interface VocationalContextProps {
 const VocationalContext = createContext<VocationalContextProps | null>(null);
 
 export const VocationalProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useContext(AuthContext);
+
   const [careers, setCareers] = useState<CareerNode[]>(
     SIMULATIONS.map((sim, index) => ({
       id: sim.id,
@@ -59,7 +63,25 @@ export const VocationalProvider = ({ children }: { children: ReactNode }) => {
     setUserLevel(prev => Math.min(prev + 1, MAX_LEVEL));
   };
 
-  function markSimulationCompleted(id: string) {
+  // 🔥 GUARDA AFINIDAD EN SUPABASE
+  const updateCareerAffinity = async (id: string, score: number) => {
+    setCareers(prev =>
+      prev.map(c => (c.id === id ? { ...c, affinity: Math.min(100, score) } : c))
+    );
+
+    if (!user) return;
+
+    await supabase.from("careers_affinity").upsert({
+      user_id: user.id,
+      career_id: id,
+      affinity: score
+    });
+  };
+
+  // GUARDA SIMULACIÓN COMPLETADA EN SUPABASE
+  const markSimulationCompleted = async (id: string) => {
+    if (!user) return;
+
     setCompletedSimulations(prev => {
       if (prev.includes(id)) return prev;
 
@@ -69,16 +91,11 @@ export const VocationalProvider = ({ children }: { children: ReactNode }) => {
 
       return updated;
     });
-  }
 
-  const updateCareerAffinity = (id: string, score: number) => {
-    setCareers(prev =>
-      prev.map(c =>
-        c.id === id
-          ? { ...c, affinity: Math.min(100, score) }
-          : c
-      )
-    );
+    await supabase.from("completed_simulations").insert({
+      user_id: user.id,
+      simulation_id: id
+    });
   };
 
   const stats = {

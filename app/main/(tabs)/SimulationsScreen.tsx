@@ -89,10 +89,7 @@ export default function SimulationsScreen() {
 
               <TouchableOpacity 
                 style={styles.startButton}
-                onPress={() => router.push({
-                  pathname: "../../simulations/[id]",
-                  params: { id: item.id }
-                })}
+                onPress={() => router.push(`../../simulations/${item.id}`)}
               >
                 <Text style={styles.startButtonText}>Comenzar</Text>
               </TouchableOpacity>

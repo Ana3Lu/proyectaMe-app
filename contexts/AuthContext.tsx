@@ -11,6 +11,8 @@ interface Profile {
   points?: number;
   avatar_url?: string;
   role?: string;
+  plan_type?: string;
+  plan_expiration?: string;
 }
 
 interface AuthContextProps {
@@ -37,7 +39,7 @@ export const AuthProvider = ({ children }: any) => {
       if (session?.user) {
         const { data } = await supabase
           .from("profiles")
-          .select()
+          .select("id, name, email, avatar_url, bio, phone, gender, points, plan_type, plan_expires_at")
           .eq("id", session.user.id)
           .single();
         if (data) setUser(data);
@@ -138,6 +140,7 @@ export const AuthProvider = ({ children }: any) => {
         email: email.trim(),
         points: 0,
         bio: "hello!",
+        plan_type: "free"
       });
 
     if (profileError) {

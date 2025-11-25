@@ -5,12 +5,22 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
+
+  const [loading, setLoading] = useState(false);
 
   const [profile, setProfile] = useState({
     name: "",
@@ -26,7 +36,6 @@ export default function EditProfileScreen() {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -35,25 +44,20 @@ export default function EditProfileScreen() {
 
       if (data) setProfile(data);
     };
-
     load();
   }, [user]);
 
-  const updateField = async (field: string, value: any) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
-
-    await supabase
-      .from("profiles")
-      .update({ [field]: value })
-      .eq("id", user?.id);
+  const saveChanges = async () => {
+    setLoading(true);
+    await supabase.from("profiles").update(profile).eq("id", user?.id);
+    setLoading(false);
+    router.back();
   };
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
-
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
-
           <TouchableOpacity onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={28} color="#fff" />
           </TouchableOpacity>
@@ -69,7 +73,6 @@ export default function EditProfileScreen() {
               <MaterialIcons name="photo-camera" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
-
         </LinearGradient>
 
         <View style={styles.formCard}>
@@ -78,54 +81,53 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Nombre</Text>
           <TextInput
             value={profile.name}
-            onChangeText={(v) => updateField("name", v)}
+            onChangeText={(v) => setProfile({ ...profile, name: v })}
             style={styles.input}
           />
 
           <Text style={styles.label}>Correo</Text>
           <TextInput
             value={profile.email}
-            onChangeText={(v) => updateField("email", v)}
+            onChangeText={(v) => setProfile({ ...profile, email: v })}
             style={styles.input}
           />
 
           <Text style={styles.label}>Nivel educativo</Text>
           <TextInput
             value={profile.education_level}
-            onChangeText={(v) => updateField("education_level", v)}
+            onChangeText={(v) => setProfile({ ...profile, education_level: v })}
             style={styles.input}
           />
-
-          <Text style={styles.section}>Preferencias</Text>
-
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Notificaciones</Text>
-            <Switch
-              value={profile.notifications_enabled}
-              onValueChange={(v) => updateField("notifications_enabled", v)}
-            />
-          </View>
-
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Modo oscuro</Text>
-            <Switch
-              value={profile.dark_mode}
-              onValueChange={(v) => updateField("dark_mode", v)}
-            />
-          </View>
         </View>
 
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Botones inferior */}
+      <View style={styles.footerButtons}>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: "#DD3282" }]}
+          onPress={saveChanges}
+        >
+          <Text style={styles.btnText}>{loading ? "Guardando..." : "Guardar"}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: "#aaa" }]}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.btnText}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
 
       <CameraModal
         isVisible={cameraVisible}
         onCancel={() => setCameraVisible(false)}
         onConfirm={(url) => {
-          updateField("avatar_url", url);
+          setProfile({ ...profile, avatar_url: url });
           setCameraVisible(false);
         }}
       />
-
     </View>
   );
 }
@@ -180,13 +182,25 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#F7F7F7",
   },
-  switchRow: {
+  footerButtons: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 12,
+    padding: 20,
+    backgroundColor: "#fff",
+    gap: 10,
   },
-  switchLabel: {
-    fontFamily: "PoppinsRegular",
+  btn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  btnText: {
+    color: "#fff",
+    fontFamily: "PoppinsBold",
     fontSize: 16,
   },
 });

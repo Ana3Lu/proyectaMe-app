@@ -1,0 +1,305 @@
+import { AuthContext } from "@/contexts/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useContext, useEffect, useRef, useState } from "react";
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ChatBubble } from "../ui/ChatBubble";
+import HeaderButton from "../ui/HeaderButton";
+import { OptionButton } from "../ui/OptionButton";
+
+export default function ChatScreen() {
+  const [chat, setChat] = useState<
+    { sender: "robby" | "user"; message: string }[]
+  >([]);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const { user } = useContext(AuthContext); // user.plan: "free" | "premium"
+
+  const freeLimit = 5; // Máximo 5 preguntas si es Free
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 200);
+  };
+
+  useEffect(() => {
+    // Mensaje inicial de Robby
+    setChat([
+      {
+        sender: "robby",
+        message:
+          "¡Hola! Soy Robby, tu asistente vocacional 👋\n¿Sobre qué te gustaría hablar hoy?",
+      },
+    ]);
+  }, []);
+
+  useEffect(() => scrollToBottom(), [chat]);
+
+  // Preguntar a Gemini
+  const askGemini = async (prompt: string) => {
+    try {
+      setLoading(true);
+
+      const body = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `
+Eres Robby, un guía vocacional amable, claro y motivador. 
+Responde SIEMPRE en menos de 120 palabras, con tono humano y concreto.
+
+Tema actual de conversación: "${selectedTopic}"
+
+Pregunta del usuario: "${prompt}"
+
+Da información útil pero nunca muy larga. No repitas lo mismo. 
+No incluyas formato Markdown. Solo texto.
+                `,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 150,
+        },
+      };
+
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? "",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      const data = await response.json();
+
+      const content =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+        "Lo siento, no pude procesar tu pregunta. Intenta de nuevo 😊";
+
+      setChat((prev) => [...prev, { sender: "robby", message: content }]);
+    } catch (err) {
+      console.error(err);
+      setChat((prev) => [
+        ...prev,
+        {
+          sender: "robby",
+          message:
+            "Parece que hubo un error temporal. ¿Quieres intentar otra vez?",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // -------------------------------------
+  // HANDLE SEND MESSAGE
+  // -------------------------------------
+  const handleSend = () => {
+    if (!input.trim() || loading) return;
+
+    // Límite si es usuario Free
+    const userMessages = chat.filter((c) => c.sender === "user").length;
+
+    if (user?.plan_type === "free" && userMessages >= freeLimit) {
+      setChat((prev) => [
+        ...prev,
+        {
+          sender: "robby",
+          message:
+            "Ya llegaste al límite de preguntas gratuitas 😊\nSi quieres seguir hablando conmigo, puedes mejorar tu plan ✨",
+        },
+      ]);
+      setInput("");
+      return;
+    }
+
+    const msg = input.trim();
+    setInput("");
+
+    setChat((prev) => [...prev, { sender: "user", message: msg }]);
+
+    askGemini(msg);
+  };
+
+  // -------------------------------------
+  // HANDLE TOPIC SELECTION
+  // -------------------------------------
+  const handleTopicSelect = (topic: string) => {
+    setSelectedTopic(topic);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        sender: "robby",
+        message: `¡Genial! Hablemos sobre ${topic.toLowerCase()}.\n¿Qué te gustaría saber? 🚀`,
+      },
+    ]);
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      {/* HEADER */}
+      <LinearGradient
+        colors={["#7794F5", "#2F32CD"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
+        <HeaderButton icon="chevron-back" onPress={() => router.back()} />
+
+        <Text style={styles.headerText}>Tu guía Robby</Text>
+
+        <View style={{ width: 40 }} /> 
+      </LinearGradient>
+
+      {/* CHAT */}
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {chat.map((c, i) => (
+          <ChatBubble key={i} message={c.message} sender={c.sender} />
+        ))}
+
+        {!selectedTopic && (
+          <View style={{ marginTop: 16 }}>
+            <OptionButton
+              option="Metas"
+              selected={false}
+              onPress={() => handleTopicSelect("Metas")}
+            />
+            <OptionButton
+              option="Explorar oficios y carreras"
+              selected={false}
+              onPress={() =>
+                handleTopicSelect("Explorar oficios y carreras")
+              }
+            />
+            <OptionButton
+              option="Recomendaciones vocacionales"
+              selected={false}
+              onPress={() =>
+                handleTopicSelect("Recomendaciones vocacionales")
+              }
+            />
+          </View>
+        )}
+      </ScrollView>
+
+      {/* INPUT BAR */}
+      {selectedTopic && (
+        <View
+          style={[
+            styles.inputContainer,
+            { paddingBottom: insets.bottom > 20 ? insets.bottom : 20 },
+          ]}
+        >
+          <TextInput
+            style={styles.input}
+            placeholder="Escribe tu mensaje..."
+            value={input}
+            onChangeText={setInput}
+            multiline
+          />
+
+          <TouchableOpacity
+            style={styles.sendWrapper}
+            onPress={handleSend}
+            disabled={loading}
+          >
+            <LinearGradient
+              colors={["#7794F5", "#2F32CD"]}
+              style={styles.sendButton}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Ionicons name="send" size={18} color="#fff" />
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+    </KeyboardAvoidingView>
+  );
+}
+
+// -------------------------
+// STYLES
+// -------------------------
+const styles = StyleSheet.create({
+  header: {
+    paddingTop: 50,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  inputContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  input: {
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  sendWrapper: {
+    marginLeft: 10,
+  },
+  sendButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

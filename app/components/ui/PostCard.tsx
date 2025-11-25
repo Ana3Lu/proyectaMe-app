@@ -11,8 +11,10 @@ export default function PostCard({
   avatar,
   postId,
   onToggleLike,
+  liked: initialLiked = false,
+  onDelete
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialLikes);
 
   const handleLike = () => {
@@ -30,6 +32,14 @@ export default function PostCard({
           <Text style={{ fontFamily: "PoppinsBold" }}>{userName}</Text>
           <Text style={{ fontFamily: "PoppinsRegular", color: "#555" }}>{time}</Text>
         </View>
+      </View>
+
+      <View style={{ position: "absolute", right: 20, top: 20 }}>
+        {onDelete && (
+          <TouchableOpacity onPress={onDelete}>
+            <MaterialIcons name="delete" size={26} color="#FF3B3B" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={{ marginTop: 15, fontSize: 16, fontFamily: "PoppinsRegular" }}>{text}</Text>

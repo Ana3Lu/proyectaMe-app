@@ -15,25 +15,28 @@ import HeaderButton from "../components/ui/HeaderButton";
 import PrimaryButton from "../components/ui/PrimaryButton";
 
 export default function RegisterScreen() {
+
   const { register } = useContext(AuthContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  async function handleRegister() {
-    if (!name || !email || !password) return alert("Completa todos los campos");
-    if (password !== password2) return alert("Las contraseñas no coinciden");
+  const handleRegister = async () => {
+    if (!name || !email || !password) return;
 
-    const { error } = await register(name, email, password);
+    if (password !== confirmPassword) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
 
-    if (error) return alert(error.message);
+    const ok = await register(name, email, password);
 
-    alert("Cuenta creada 🎉");
-
-    router.push("/LoginScreen");
-  }
+    if (ok) {
+      router.push("/LoginScreen");
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -41,18 +44,19 @@ export default function RegisterScreen() {
 
         {/* Back Button */}
         <TouchableOpacity style={styles.headerBack}>
-          <HeaderButton 
-              icon="arrow-back" 
-              color="#2F32CD"
-              backgroundColor="transparent" 
-              onPress={() => router.back()}
-          />
+            <HeaderButton 
+                icon="arrow-back" 
+                color="#2F32CD"
+                backgroundColor="transparent" 
+                onPress={() => router.back()}
+            />
         </TouchableOpacity>
 
         <View style={styles.container}>
 
           <StatusBar barStyle="dark-content" />
 
+          {/* Header */}
           <Text style={styles.title}>Crea tu cuenta</Text>
 
           <Text style={styles.subtitle}>
@@ -65,10 +69,11 @@ export default function RegisterScreen() {
             </Text>
           </Text>
 
+          {/* Form */}
           <View style={styles.formCard}>
 
             <Text style={styles.label}>Nombre</Text>
-            <TextInput
+            <TextInput 
               placeholder="Tu nombre"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
@@ -77,7 +82,7 @@ export default function RegisterScreen() {
             />
 
             <Text style={styles.label}>Correo electrónico</Text>
-            <TextInput
+            <TextInput 
               placeholder="tu@email.com"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
@@ -86,7 +91,7 @@ export default function RegisterScreen() {
             />
 
             <Text style={styles.label}>Contraseña</Text>
-            <TextInput
+            <TextInput 
               secureTextEntry
               placeholder="Tu contraseña"
               placeholderTextColor="#A0A0A0"
@@ -96,13 +101,13 @@ export default function RegisterScreen() {
             />
 
             <Text style={styles.label}>Confirmar contraseña</Text>
-            <TextInput
+            <TextInput 
               secureTextEntry
-              placeholder="Repite tu contraseña"
+              placeholder="Tu contraseña"
               placeholderTextColor="#A0A0A0"
               style={styles.input}
-              value={password2}
-              onChangeText={setPassword2}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
 
             <PrimaryButton 
@@ -112,6 +117,7 @@ export default function RegisterScreen() {
             />
           </View>
 
+          {/* Footer */}
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>¿Ya tienes cuenta?</Text>
 

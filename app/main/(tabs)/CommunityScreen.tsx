@@ -1,36 +1,148 @@
+import BookCard from "@/app/components/ui/BookCard";
 import HeaderButton from "@/app/components/ui/HeaderButton";
 import PostCard from "@/app/components/ui/PostCard";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
+import { AuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/utils/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from "react";
+
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Tipos Libros
+type GoogleBook = {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    imageLinks?: { thumbnail?: string };
+  };
+};
+
+// Tipos Post
+type Post = {
+  id: string;
+  user_id: string;
+  user_name: string;
+  text: string;
+  created_at: string;
+  likes: number;
+  liked: boolean;
+};
 
 export default function CommunityScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useContext(AuthContext);
+  const isPremium = user?.plan_type === "premium";
 
-  // Función para manejar likes
-  const handleToggleLike = (postId, liked) => {
-    console.log("Toggle like:", { postId, liked });
-    // Aquí puedes guardar en Supabase si después lo quieres
+  const [books, setBooks] = useState<GoogleBook[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  // Eliminar publicacion
+  const handleDeletePost = async (postId: string) => {
+    await supabase.from("posts").delete().eq("id", postId);
+    fetchPosts();
+  };
+
+  // -Obtener libros de interes
+  const fetchBooks = useCallback(async () => {
+    if (!user) return;
+
+    const { data: affinities } = await supabase
+      .from("user_affinities")
+      .select("affinity")
+      .eq("user_id", user.id);
+
+    const keywords =
+      affinities?.map((a) => a.affinity).join(" ") || "career stories";
+
+    const res = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${keywords}&maxResults=6`
+    );
+
+    const json = await res.json();
+    setBooks(json.items || []);
+  }, [user]);
+
+  // Obtener publicaciones
+  const fetchPosts = useCallback(async () => {
+    if (!user) return;
+
+    const { data: postsData } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const { data: likesData } = await supabase
+      .from("posts_likes")
+      .select("post_id, liked")
+      .eq("user_id", user.id);
+
+    const postsWithLikes: Post[] =
+      postsData?.map((p) => ({
+        id: p.id,
+        user_id: p.user_id,
+        user_name: p.user_name,
+        text: p.text,
+        created_at: p.created_at,
+        likes: p.likes ?? 0,
+        liked: likesData?.some((l) => l.post_id === p.id && l.liked) || false,
+      })) || [];
+
+    setPosts(postsWithLikes);
+  }, [user]);
+
+  useEffect(() => {
+    fetchBooks();
+    fetchPosts();
+  }, [fetchBooks, fetchPosts]);
+
+  // Manejar like
+  const handleToggleLike = async (postId: string, liked: boolean) => {
+    if (!user) return;
+
+    // Cambiar estado local
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, liked: !liked, likes: p.likes + (liked ? -1 : 1) }
+          : p
+      )
+    );
+
+    // Guardarlo en Supabase
+    await supabase.from("posts_likes").upsert({
+      user_id: user.id,
+      post_id: postId,
+      liked: !liked,
+    });
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <LinearGradient
-          colors={["#7794F5", "#2F32CD"]}
-          style={styles.header}
-        >
+
+        {/* HEADER */}
+        <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.header}>
           <View style={styles.headerRow}>
-            <HeaderButton 
-              icon="arrow-back" 
-              onPress={() => router.back()}
-            />
+            <HeaderButton icon="arrow-back" onPress={() => router.back()} />
 
             <View style={{ flexShrink: 1 }}>
               <Text style={styles.headerTitle}>Comunidad</Text>
@@ -41,15 +153,18 @@ export default function CommunityScreen() {
           </View>
         </LinearGradient>
 
-        {/* Reto semanal */}
+        {/* RETO SEMANAL */}
         <View style={styles.weeklyCard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={styles.trophyCircle}>
               <MaterialIcons name="emoji-events" size={32} color="#130F40" />
             </View>
+
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.weeklyTitle}>Reto Semanal</Text>
-              <Text style={styles.weeklyDesc}>Completa 3 simulaciones esta semana</Text>
+              <Text style={styles.weeklyDesc}>
+                Completa 3 simulaciones esta semana
+              </Text>
             </View>
           </View>
 
@@ -59,44 +174,52 @@ export default function CommunityScreen() {
           </View>
         </View>
 
-        {/* Botones principales */}
-        <View style={styles.buttonRow}>
-          <View style={{ flex: 1, marginRight: 10 }}>
-            <PrimaryButton title="Nueva reflexión" onPress={() => {}} />
+        {/* BOTONES PREMIUM */}
+        {isPremium && (
+          <View style={styles.buttonRow}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+              <PrimaryButton title="Nueva reflexión" onPress={() => router.push("../NewPostScreen")} />
+            </View>
+
+            <TouchableOpacity style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Ver retos</Text>
+            </TouchableOpacity>
           </View>
+        )}
 
-          <TouchableOpacity style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Ver retos</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Publicaciones */}
+        {/* PUBLICACIONES */}
         <Text style={styles.sectionTitle}>Publicaciones</Text>
 
-        <PostCard
-          postId={1}
-          onToggleLike={handleToggleLike}
-          userName="Juliana Martínez"
-          time="Hace 23 minutos"
-          text="Reflexión del día: no hay que tener miedo a explorar diferentes áreas. Empecé con Arte y ahora también me interesa UX Design. ¡Todo se conecta! ✨"
-          likes={36}
-          comments={15}
-          avatar={require("../../../assets/images/robby.png")}
-        />
+        {posts.map((p) => (
+          <PostCard
+            key={p.id}
+            postId={p.id}
+            userName={p.user_name}
+            time={new Date(p.created_at).toLocaleString()}
+            text={p.text}
+            likes={p.likes}
+            comments={0}
+            avatar={require("../../../assets/images/robby.png")}
+            liked={p.liked}
+            onToggleLike={() => handleToggleLike(p.id, p.liked)}
+            onDelete={p.user_id === user?.id ? () => handleDeletePost(p.id) : null}
+          />
+        ))}
 
-        <PostCard
-          postId={2}
-          onToggleLike={handleToggleLike}
-          userName="Santiago López"
-          time="Hace 1 hora"
-          text="Mi primera simulación fue increíble, nunca pensé que conectaría con ingeniería ambiental 🌱."
-          likes={14}
-          comments={3}
-          avatar={require("../../../assets/images/robby.png")}
-        />
+        {/* LIBROS */}
+        <Text style={styles.sectionTitle}>Recomendados</Text>
+
+        {books.map((b) => (
+          <BookCard
+            key={b.id}
+            title={b.volumeInfo.title}
+            author={b.volumeInfo.authors?.join(", ")}
+            image={b.volumeInfo.imageLinks?.thumbnail}
+            onPress={() => {}}
+          />
+        ))}
 
         <View style={{ height: 40 }} />
-
       </ScrollView>
     </View>
   );
@@ -109,10 +232,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  headerRow: { flexDirection: "row", alignItems: "center" },
   headerTitle: {
     fontSize: 32,
     color: "#fff",
@@ -132,10 +252,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 10,
     borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { height: 4, width: 0 },
-    elevation: 5,
   },
   trophyCircle: {
     width: 55,
@@ -145,11 +261,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  weeklyTitle: {
-    fontFamily: "PoppinsBold",
-    color: "#130F40",
-    fontSize: 18,
-  },
+  weeklyTitle: { fontFamily: "PoppinsBold", color: "#130F40", fontSize: 18 },
   weeklyDesc: {
     fontFamily: "PoppinsRegular",
     fontSize: 14,

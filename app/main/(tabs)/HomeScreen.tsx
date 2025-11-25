@@ -1,8 +1,12 @@
+import BookCard from "@/app/components/ui/BookCard";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 import { SIMULATIONS } from "@/constants/simulations";
+import { AuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/utils/supabase";
 import { FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -14,10 +18,47 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+type GoogleBook = {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    imageLinks?: {
+      thumbnail?: string;
+    };
+    infoLink?: string;
+  };
+}
+
 export default function HomeScreen() {
 
     const recommended = SIMULATIONS[0];
     const insets = useSafeAreaInsets();
+    const { user } = useContext(AuthContext);
+    const [books, setBooks] = useState<GoogleBook[]>([]);
+
+    const fetchBooks = useCallback(async () => {
+      if (!user) return;
+
+      const { data: affinities } = await supabase
+        .from("user_affinities")
+        .select("affinity")
+        .eq("user_id", user.id);
+
+      const keywords =
+        affinities?.map((a) => a.affinity).join(" ") || "career stories";
+
+      const res = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=${keywords}&maxResults=4`
+      );
+
+      const json = await res.json();
+      setBooks(json.items || []);
+    }, [user]);
+
+    useEffect(() => {
+      fetchBooks();
+    }, [fetchBooks]);
 
     return (
         <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: insets.top }}>
@@ -130,6 +171,19 @@ export default function HomeScreen() {
                         <Text style={styles.recDesc}>{recommended.desc}</Text>
                     </View>
                 </View>
+
+                {/* Libros recomendados */}
+                <Text style={styles.sectionTitle}>Lecturas para ti</Text>
+
+                {books.map((b) => (
+                  <BookCard
+                    key={b.id}
+                    title={b.volumeInfo.title}
+                    author={b.volumeInfo.authors?.join(", ")}
+                    image={b.volumeInfo.imageLinks?.thumbnail}
+                    onPress={() => router.push(`../../books/${b.id}`)}
+                  />
+                ))}
 
                 {/* Botón */}
                 <View style={styles.buttonRow}>
