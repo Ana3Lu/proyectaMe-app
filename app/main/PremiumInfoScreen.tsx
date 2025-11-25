@@ -5,17 +5,30 @@ import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function PremiumInfoScreen() {
+  const benefits = [
+    "Acceso ilimitado a todas las simulaciones",
+    "Chat sin límites con Robby",
+    "Sin anuncios ni interrupciones",
+    "Participar activamente en la comunidad",
+    "Retos vocacionales semanales",
+    "Contenido exclusivo con IA",
+  ];
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         
+        {/* HEADER CON GRADIENTE */}
         <LinearGradient
           colors={["#F5D142", "#C89E00"]}
           style={styles.header}
         >
-          <HeaderButton icon="arrow-back" onPress={() => router.back()} />
+          {/* HEADER ROW */}
+          <View style={styles.headerRow}>
+            <HeaderButton icon="arrow-back" color="#fff" backgroundColor="#BD9D1E" onPress={() => router.back()} />
+            <Text style={styles.title}>¡Te agradecemos!</Text>
+          </View>
 
-          <Text style={styles.title}>¡Te agradecemos!</Text>
           <Text style={styles.subtitle}>
             Recuerda que tu cuenta Premium te incluye los beneficios descritos acá
           </Text>
@@ -28,27 +41,21 @@ export default function PremiumInfoScreen() {
         {/* Precio */}
         <View style={styles.priceBox}>
           <Text style={styles.oldPrice}>$11.999 / mes</Text>
-          <Text style={styles.newPrice}>$8.999 / mes</Text>
+          <Text style={styles.newPrice}>$8.999 <Text style={styles.month}>/ mes</Text></Text> 
           <Text style={styles.discount}>25% de descuento 🎉</Text>
           <Text style={styles.cancel}>Cancela cuando quieras • Sin permanencia</Text>
         </View>
 
-        {/* Lista */}
+        {/* Lista de Beneficios con Cards */}
         <Text style={styles.sectionTitle}>Qué incluye Premium</Text>
-
-        {[
-          "Acceso ilimitado a todas las simulaciones",
-          "Chat sin límites con Robby",
-          "Sin anuncios ni interrupciones",
-          "Participar activamente en la comunidad",
-          "Retos vocacionales semanales",
-          "Contenido exclusivo con IA",
-        ].map((item, index) => (
-          <View key={index} style={styles.itemRow}>
-            <Text style={styles.itemText}>{item}</Text>
-            <Text style={styles.check}>✓</Text>
-          </View>
-        ))}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          {benefits.map((item, index) => (
+            <View key={index} style={styles.cardItem}>
+              <Text style={styles.itemText}>{item}</Text>
+              <Text style={styles.check}>✓</Text>
+            </View>
+          ))}
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -60,19 +67,26 @@ const styles = StyleSheet.create({
   header: {
     padding: 25,
     paddingBottom: 60,
+    paddingTop: 50,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
   },
   title: {
     fontSize: 32,
     color: "#fff",
     fontFamily: "PoppinsBold",
-    marginTop: 20,
+    marginLeft: 10, 
+    flexShrink: 1, 
   },
   subtitle: {
     color: "#fff",
     marginTop: 10,
-    fontFamily: "PoppinsRegular",
+    fontWeight: "500",
     fontSize: 18,
     maxWidth: 300,
   },
@@ -105,10 +119,14 @@ const styles = StyleSheet.create({
   newPrice: {
     fontSize: 36,
     fontFamily: "PoppinsBold",
-    color: "#130F40",
+    color: "#2F32CD",
+  },
+  month: {
+    fontSize: 16,
+    color: "#000",
   },
   discount: {
-    backgroundColor: "#FF4F9E",
+    backgroundColor: "#BD9D1E",
     color: "#fff",
     paddingHorizontal: 15,
     paddingVertical: 6,
@@ -128,20 +146,26 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
     color: "#130F40",
   },
-  itemRow: {
+  cardItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal: 25,
-    paddingVertical: 12,
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 20,
+    marginBottom: 12,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#EEE",
   },
   itemText: {
     fontFamily: "PoppinsRegular",
     fontSize: 18,
-    maxWidth: 260,
+    flexShrink: 1,
   },
   check: {
     fontSize: 24,
     color: "#41C27D",
     fontFamily: "PoppinsBold",
+    marginLeft: 10,
   },
 });

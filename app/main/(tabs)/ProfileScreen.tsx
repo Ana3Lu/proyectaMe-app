@@ -24,9 +24,31 @@ export default function ProfileScreen() {
   const [simCount, setSimCount] = useState(0);
   const { user, getStreak } = useContext(AuthContext);
   const [streak, setStreak] = useState(0);
+  const [level, setLevel] = useState(1);
 
   const [userAffinities, setUserAffinities] = useState<{ affinity: string }[]>([]);
   const [strengths, setStrengths] = useState<{ skill: string; score: number }[]>([]);
+
+  const LEVELS = [
+    { level: 1, xpRequired: 0 },
+    { level: 2, xpRequired: 100 },
+    { level: 3, xpRequired: 200 },
+    { level: 4, xpRequired: 300 },
+    { level: 5, xpRequired: 500 },
+  ];
+
+  const getCurrentLevel = (xp: number) => {
+    let lvl = 1;
+    for (let i = 0; i < LEVELS.length; i++) {
+      if (xp >= LEVELS[i].xpRequired) lvl = LEVELS[i].level;
+    }
+    return lvl;
+  };
+
+  const getNextLevelXp = (currentLevel: number) => {
+    const nextLevel = LEVELS.find(l => l.level === currentLevel + 1);
+    return nextLevel ? nextLevel.xpRequired : LEVELS[LEVELS.length - 1].xpRequired;
+  };
 
   // Cargar stats
   const loadStats = useCallback(async () => {
@@ -38,7 +60,9 @@ export default function ProfileScreen() {
       .eq("id", user.id)
       .single();
 
-    setXp(profileData?.points ?? 0);
+    const userXp = profileData?.points ?? 0;
+    setXp(userXp);
+    setLevel(getCurrentLevel(userXp));
 
     const { count: sims } = await supabase
       .from("completed_simulations")
@@ -114,6 +138,10 @@ export default function ProfileScreen() {
     ? new Date(profile.created_at).getFullYear()
     : "—";
 
+  const nextLevelXp = getNextLevelXp(level);
+  const xpForProgress = nextLevelXp - LEVELS[level - 1].xpRequired;
+  const xpProgress = xp - LEVELS[level - 1].xpRequired;
+
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "#fff" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -145,28 +173,36 @@ export default function ProfileScreen() {
                   </Text>
 
                   <TouchableOpacity
-                    style={styles.premiumTag}
-                    onPress={() => router.push("/main/PremiumInfoScreen")}
-                  >
-                    <MaterialIcons name="star" size={16} color="#fff" />
-                    <Text style={styles.premiumText}>Premium</Text>
-                  </TouchableOpacity>
+                      style={styles.premiumTag}
+                      onPress={() => router.push("/main/PremiumInfoScreen")}
+                    >
+                      <MaterialIcons name="star" size={16} color="#fff" />
+                      <Text style={styles.premiumText}>Premium</Text>
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={styles.memberSince}>
                   Miembro desde {memberSinceYear}
                 </Text>
-                <Text style={styles.bio}>{profile?.bio || "Sin biografía"}</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                    {/* Bio */}
+                    <Text style={styles.bio}>{profile?.bio || "Sin biografía"}</Text>
+
+                    {/* Botón de Nivel */}
+                    <TouchableOpacity style={styles.levelTag} activeOpacity={1}>
+                        <Text style={styles.levelText}>Nivel {level}</Text>
+                    </TouchableOpacity>
+                    </View>
               </View>
             </View>
 
             {/* PROGRESO AL NIVEL */}
             <View style={styles.progressBox}>
               <View style={styles.progressRow}>
-                <Text style={styles.progressText}>Progreso al Nivel 4</Text>
-                <Text style={styles.progressDetail}>{xp} / 300 XP</Text>
+                <Text style={styles.progressText}>Progreso al Nivel {level + 1}</Text>
+                <Text style={styles.progressDetail}>{xpProgress} / {xpForProgress} XP</Text>
               </View>
-              <ProgressBar value={(xp / 300) * 100} />
+              <ProgressBar value={(xpProgress / xpForProgress) * 100} />
             </View>
           </View>
         </LinearGradient>
@@ -281,7 +317,7 @@ const styles = StyleSheet.create({
   premiumTag: {
     flexDirection: "row",
     backgroundColor: "#DD3282",
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     paddingVertical: 5,
     borderRadius: 8,
     alignItems: "center",
@@ -383,5 +419,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "PoppinsBold",
     fontSize: 18,
+  },
+  levelTag: {
+    backgroundColor: "#59B5A2",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  levelText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "PoppinsBold",
   },
 });
