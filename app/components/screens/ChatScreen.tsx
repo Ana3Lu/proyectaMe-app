@@ -20,18 +20,16 @@ import HeaderButton from "../ui/HeaderButton";
 import { OptionButton } from "../ui/OptionButton";
 
 export default function ChatScreen() {
-  const [chat, setChat] = useState<
-    { sender: "robby" | "user"; message: string }[]
-  >([]);
+  const [chat, setChat] = useState<{ sender: "robby" | "user"; message: string }[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const insets = useSafeAreaInsets();
+
   const scrollRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
+  const { user } = useContext(AuthContext);
 
-  const { user } = useContext(AuthContext); // user.plan: "free" | "premium"
-
-  const freeLimit = 5; // Máximo 5 preguntas si es Free
+  const freeLimit = 5;
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -40,19 +38,20 @@ export default function ChatScreen() {
   };
 
   useEffect(() => {
-    // Mensaje inicial de Robby
+    // Mensaje inicial
     setChat([
       {
         sender: "robby",
-        message:
-          "¡Hola! Soy Robby, tu asistente vocacional 👋\n¿Sobre qué te gustaría hablar hoy?",
+        message: "¡Hola! Soy Robby, tu asistente vocacional 👋\n¿Sobre qué te gustaría hablar hoy?",
       },
     ]);
   }, []);
 
   useEffect(() => scrollToBottom(), [chat]);
 
-  // Preguntar a Gemini
+  // -------------------------------
+  // FUNCION PARA PREGUNTAR A GEMINI
+  // -------------------------------
   const askGemini = async (prompt: string) => {
     try {
       setLoading(true);
@@ -63,22 +62,16 @@ export default function ChatScreen() {
             parts: [
               {
                 text: `
-Eres Robby, un guía vocacional amable, claro y motivador. 
-Responde SIEMPRE en menos de 120 palabras, con tono humano y concreto.
-
-Tema actual de conversación: "${selectedTopic}"
-
+Eres Robby, un asistente vocacional amable. Responde solo con texto simple, máximo tipo 120 palabras. 
+Tema actual: "${selectedTopic ?? "general"}"
 Pregunta del usuario: "${prompt}"
-
-Da información útil pero nunca muy larga. No repitas lo mismo. 
-No incluyas formato Markdown. Solo texto.
-                `,
+              `,
               },
             ],
           },
         ],
         generationConfig: {
-          maxOutputTokens: 150,
+          maxOutputTokens: 500,
         },
       };
 
@@ -95,44 +88,40 @@ No incluyas formato Markdown. Solo texto.
       );
 
       const data = await response.json();
+      //console.log("Raw Gemini response:", JSON.stringify(data, null, 2));
 
-      const content =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-        "Lo siento, no pude procesar tu pregunta. Intenta de nuevo 😊";
+      // Tomamos el primer candidato y su texto
+      const candidate = data?.candidates?.[0];
+      let contentText = "Lo siento, no pude procesar tu pregunta. Intenta de nuevo 😊";
 
-      setChat((prev) => [...prev, { sender: "robby", message: content }]);
+      if (candidate?.content?.parts?.length) {
+        contentText = candidate.content.parts.map((p: any) => p.text).join(" ");
+      }
+
+      setChat((prev) => [...prev, { sender: "robby", message: contentText }]);
     } catch (err) {
       console.error(err);
       setChat((prev) => [
         ...prev,
-        {
-          sender: "robby",
-          message:
-            "Parece que hubo un error temporal. ¿Quieres intentar otra vez?",
-        },
+        { sender: "robby", message: "Hubo un error temporal. Intenta otra vez 😊" },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------------------------------
-  // HANDLE SEND MESSAGE
-  // -------------------------------------
+  // -------------------------------
+  // ENVIAR MENSAJE
+  // -------------------------------
   const handleSend = () => {
     if (!input.trim() || loading) return;
 
-    // Límite si es usuario Free
     const userMessages = chat.filter((c) => c.sender === "user").length;
 
     if (user?.plan_type === "free" && userMessages >= freeLimit) {
       setChat((prev) => [
         ...prev,
-        {
-          sender: "robby",
-          message:
-            "Ya llegaste al límite de preguntas gratuitas 😊\nSi quieres seguir hablando conmigo, puedes mejorar tu plan ✨",
-        },
+        { sender: "robby", message: "Ya llegaste al límite de preguntas gratuitas 😊" },
       ]);
       setInput("");
       return;
@@ -140,24 +129,18 @@ No incluyas formato Markdown. Solo texto.
 
     const msg = input.trim();
     setInput("");
-
     setChat((prev) => [...prev, { sender: "user", message: msg }]);
-
     askGemini(msg);
   };
 
-  // -------------------------------------
-  // HANDLE TOPIC SELECTION
-  // -------------------------------------
+  // -------------------------------
+  // SELECCIONAR TEMA
+  // -------------------------------
   const handleTopicSelect = (topic: string) => {
     setSelectedTopic(topic);
-
     setChat((prev) => [
       ...prev,
-      {
-        sender: "robby",
-        message: `¡Genial! Hablemos sobre ${topic.toLowerCase()}.\n¿Qué te gustaría saber? 🚀`,
-      },
+      { sender: "robby", message: `¡Genial! Hablemos sobre ${topic.toLowerCase()}.` },
     ]);
   };
 
@@ -174,10 +157,8 @@ No incluyas formato Markdown. Solo texto.
         style={styles.header}
       >
         <HeaderButton icon="chevron-back" onPress={() => router.back()} />
-
         <Text style={styles.headerText}>Tu guía Robby</Text>
-
-        <View style={{ width: 40 }} /> 
+        <View style={{ width: 40 }} />
       </LinearGradient>
 
       {/* CHAT */}
@@ -193,24 +174,16 @@ No incluyas formato Markdown. Solo texto.
 
         {!selectedTopic && (
           <View style={{ marginTop: 16 }}>
-            <OptionButton
-              option="Metas"
-              selected={false}
-              onPress={() => handleTopicSelect("Metas")}
-            />
+            <OptionButton option="Metas" selected={false} onPress={() => handleTopicSelect("Metas")} />
             <OptionButton
               option="Explorar oficios y carreras"
               selected={false}
-              onPress={() =>
-                handleTopicSelect("Explorar oficios y carreras")
-              }
+              onPress={() => handleTopicSelect("Explorar oficios y carreras")}
             />
             <OptionButton
               option="Recomendaciones vocacionales"
               selected={false}
-              onPress={() =>
-                handleTopicSelect("Recomendaciones vocacionales")
-              }
+              onPress={() => handleTopicSelect("Recomendaciones vocacionales")}
             />
           </View>
         )}
@@ -232,20 +205,9 @@ No incluyas formato Markdown. Solo texto.
             multiline
           />
 
-          <TouchableOpacity
-            style={styles.sendWrapper}
-            onPress={handleSend}
-            disabled={loading}
-          >
-            <LinearGradient
-              colors={["#7794F5", "#2F32CD"]}
-              style={styles.sendButton}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Ionicons name="send" size={18} color="#fff" />
-              )}
+          <TouchableOpacity style={styles.sendWrapper} onPress={handleSend} disabled={loading}>
+            <LinearGradient colors={["#7794F5", "#2F32CD"]} style={styles.sendButton}>
+              {loading ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={18} color="#fff" />}
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -268,11 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  headerText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "600",
-  },
+  headerText: { color: "white", fontSize: 18, fontWeight: "600" },
   inputContainer: {
     position: "absolute",
     bottom: 0,
@@ -283,6 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
+    paddingVertical: 15,
   },
   input: {
     flex: 1,
@@ -292,14 +251,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
   },
-  sendWrapper: {
-    marginLeft: 10,
-  },
-  sendButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  sendWrapper: { marginLeft: 10 },
+  sendButton: { width: 45, height: 45, borderRadius: 22, justifyContent: "center", alignItems: "center" },
 });
