@@ -164,32 +164,41 @@ export default function ProfileScreen() {
             <View style={styles.profileRow}>
               <Image
                 source={
-                    profile?.avatar_url && profile.avatar_url.trim() !== ""
-                      ? { uri: profile.avatar_url }  
-                      : require('../../../assets/images/robby.png') 
-                    }
+                    profile?.avatar_url &&
+                    typeof profile.avatar_url === "string" &&
+                    profile.avatar_url.trim() !== "" &&
+                    profile.avatar_url !== "null"
+                    ? { uri: profile.avatar_url }
+                    : require("../../../assets/images/robby.png")
+                }
                 style={styles.avatar}
-              />
+                />
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={styles.name}>{profile?.name || "Cargando..."}</Text>
+                    <Text style={styles.name}>{profile?.name || "Cargando..."}</Text>
+                    </View>
 
-                  <TouchableOpacity
+                    <TouchableOpacity
                     style={[
-                      styles.premiumTag,
-                      profile?.plan_type === "premium" && { backgroundColor: "#F5D142" }
+                        styles.premiumTag,
+                        profile?.plan_type === "premium" && { backgroundColor: "#F5D142" }
                     ]}
                     onPress={handlePremiumPress}
-                  >
-                    <MaterialIcons name="star" size={16} color={profile?.plan_type === "premium" ? "#333" : "#fff"} />
-                    <Text style={[
-                      styles.premiumText,
-                      profile?.plan_type === "premium" && { color: "#333" }
-                    ]}>
-                      Premium
+                    >
+                    <MaterialIcons
+                        name="star"
+                        size={16}
+                        color={profile?.plan_type === "premium" ? "#333" : "#fff"}
+                    />
+                    <Text
+                        style={[
+                        styles.premiumText,
+                        profile?.plan_type === "premium" && { color: "#333" }
+                        ]}
+                    >
+                        Premium
                     </Text>
-                  </TouchableOpacity>
-                </View>
+                    </TouchableOpacity>
 
                 <Text style={styles.memberSince}>Miembro desde {memberSinceYear}</Text>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
@@ -215,20 +224,28 @@ export default function ProfileScreen() {
         <View style={styles.statsBlock}>
           <View style={styles.statsInner}>
             <View style={styles.statItem}>
-              <FontAwesome5 name="brain" size={40} color="#7794F5" />
-              <Text style={styles.statNumber}>{simCount}</Text>
-              <Text style={[styles.statLabel, { color: "#7794F5" }]}>Simulaciones</Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialIcons name="emoji-events" size={48} color="#59B5A2" />
-              <Text style={styles.statNumber}>{xp}</Text>
-              <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Feather name="trending-up" size={45} color="#C89E00" />
-              <Text style={styles.statNumber}>{streak}</Text>
-              <Text style={[styles.statLabel, { color: "#C89E00" }]}>Racha</Text>
-            </View>
+                <View style={styles.iconWrapper}>
+                    <FontAwesome5 name="brain" size={40} color="#7794F5" />
+                </View>
+                <Text style={styles.statNumber}>{simCount}</Text>
+                <Text style={[styles.statLabel, { color: "#7794F5" }]}>Simulaciones</Text>
+                </View>
+
+                <View style={styles.statItem}>
+                <View style={styles.iconWrapper}>
+                    <MaterialIcons name="emoji-events" size={48} color="#59B5A2" />
+                </View>
+                <Text style={styles.statNumber}>{xp}</Text>
+                <Text style={[styles.statLabel, { color: "#59B5A2" }]}>XP</Text>
+                </View>
+
+                <View style={styles.statItem}>
+                <View style={styles.iconWrapper}>
+                    <Feather name="trending-up" size={45} color="#C89E00" />
+                </View>
+                <Text style={styles.statNumber}>{streak}</Text>
+                <Text style={[styles.statLabel, { color: "#C89E00" }]}>Racha</Text>
+                </View>
           </View>
         </View>
 
@@ -238,10 +255,13 @@ export default function ProfileScreen() {
             userAffinities.map((a, index) => (
               <Text
                 key={index}
-                style={[styles.affRow, { color: categoryColor(a.affinity) }]}
-              >
-                {a.affinity}
-              </Text>
+                style={[
+                    styles.affPill,
+                    { backgroundColor: categoryColor(a.affinity) + "22", color: categoryColor(a.affinity) }
+                ]}
+                >
+                {a.affinity.charAt(0).toUpperCase() + a.affinity.slice(1)}
+                </Text>
             ))
           ) : (
             <Text style={styles.affRow}>No hay afinidades registradas</Text>
@@ -316,13 +336,31 @@ const styles = StyleSheet.create({
     fontFamily: "PoppinsBold",
   },
   premiumTag: {
+    alignSelf: "flex-start",
+    marginTop: -5,
+    marginBottom: 4,
     flexDirection: "row",
     backgroundColor: "#DD3282",
-    paddingHorizontal: 5,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 10,
     alignItems: "center",
-  },
+    },
+  affPill: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    fontSize: 16,
+    marginVertical: 6,
+    fontFamily: "PoppinsMedium",
+    alignSelf: "flex-start",
+    },
+    iconWrapper: {
+        height: 50,
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 4,
+    },
   premiumText: {
     color: "#fff",
     marginLeft: 4,
@@ -373,6 +411,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: "center",
+    justifyContent: "center",
     flexDirection: "column",
     marginHorizontal: 10,
   },
