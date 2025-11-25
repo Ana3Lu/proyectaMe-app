@@ -38,19 +38,8 @@ export default function CommunityScreen() {
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
-  // Traer avatar del usuario desde Supabase
-  const loadUserAvatar = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("avatar_url")
-      .eq("id", user.id)
-      .single();
-    setUserAvatar(data?.avatar_url || null);
-  }, [user]);
-
+  // Traer libros
   const fetchBooks = useCallback(async () => {
     if (!user) return;
     const { data: affinities } = await supabase
@@ -64,31 +53,27 @@ export default function CommunityScreen() {
     setBooks(json.items || []);
   }, [user]);
 
-  const fetchPosts = useCallback(async () => {
-  if (!user) return;
-
   // Traer posts
-  const { data: postsData } = await supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const fetchPosts = useCallback(async () => {
+    if (!user) return;
 
-    // Traer likes del usuario actual
+    const { data: postsData } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+
     const { data: likesData } = await supabase
       .from("posts_likes")
       .select("post_id, liked")
       .eq("user_id", user.id);
 
-    // Obtener los IDs de los autores únicos
     const authorIds = Array.from(new Set(postsData?.map((p: any) => p.user_id)));
 
-    // Traer avatares de esos autores
     const { data: profilesData } = await supabase
       .from("profiles")
       .select("id, avatar_url")
       .in("id", authorIds);
 
-    // Mapear posts con likes y avatar
     const postsWithLikes: Post[] =
       postsData?.map((p: any) => ({
         id: p.id,
@@ -107,8 +92,7 @@ export default function CommunityScreen() {
 
   useEffect(() => {
     fetchBooks();
-    loadUserAvatar();
-  }, [fetchBooks, loadUserAvatar]);
+  }, [fetchBooks]);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,12 +100,38 @@ export default function CommunityScreen() {
     }, [fetchPosts])
   );
 
-  const handleToggleLike = async (postId: string, liked: boolean) => {
+  // Toggle like
+  const handleToggleLike = async (postId: string, currentlyLiked: boolean) => {
     if (!user) return;
+
+    // Actualiza estado local inmediatamente y asegura min 0
     setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, liked: !liked, likes: p.likes + (liked ? -1 : 1) } : p))
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, liked: !currentlyLiked, likes: Math.max(0, p.likes + (currentlyLiked ? -1 : 1)) }
+          : p
+      )
     );
-    await supabase.from("posts_likes").upsert({ user_id: user.id, post_id: postId, liked: !liked });
+
+    // Actualiza o inserta en posts_likes
+    await supabase
+      .from("posts_likes")
+      .upsert({ user_id: user.id, post_id: postId, liked: !currentlyLiked });
+
+    // Actualiza contador de likes en posts (asegura mínimo 0)
+    const { data: postData, error } = await supabase
+      .from("posts")
+      .select("likes")
+      .eq("id", postId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching post likes:", error.message);
+      return;
+    }
+
+    const newLikes = Math.max(0, currentlyLiked ? postData.likes - 1 : postData.likes + 1);
+    await supabase.from("posts").update({ likes: newLikes }).eq("id", postId);
   };
 
   const handleDeletePost = async (postId: string) => {
@@ -195,7 +205,7 @@ export default function CommunityScreen() {
             text={p.text}
             likes={p.likes}
             comments={0}
-            avatar={p.avatar_url  ? { uri: p.avatar_url } : require("../../../assets/images/robby.png")}
+            avatar={p.avatar_url ? { uri: p.avatar_url } : require("../../../assets/images/robby.png")}
             liked={p.liked}
             tag={p.tags?.[0]}
             onToggleLike={() => handleToggleLike(p.id, p.liked)}

@@ -1,5 +1,4 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface PostCardProps {
@@ -13,34 +12,26 @@ interface PostCardProps {
   onToggleLike?: (postId: string, liked: boolean) => void;
   liked?: boolean;
   onDelete?: (() => void) | (() => Promise<void>) | null;
-  tag?: string; // <-- opcional
+  tag?: string;
 }
 
 export default function PostCard({
   userName,
   time,
   text,
-  likes: initialLikes,
+  likes,
   comments,
   avatar,
   postId,
   onToggleLike,
-  liked: initialLiked = false,
+  liked = false,
   onDelete,
   tag,
 }: PostCardProps) {
-  const [liked, setLiked] = useState(initialLiked);
-  const [likes, setLikes] = useState(initialLikes);
-
-  const handleLike = () => {
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikes(newLiked ? likes + 1 : likes - 1);
-    onToggleLike?.(postId, newLiked);
-  };
 
   return (
     <View style={styles.card}>
+      {/* HEADER */}
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Image source={avatar} style={styles.avatar} />
         <View style={{ marginLeft: 10 }}>
@@ -49,24 +40,19 @@ export default function PostCard({
         </View>
       </View>
 
+      {/* TAG */}
       {tag && (
         <View style={[styles.categoryTag, { backgroundColor: "#2F32CD" }]}>
           <Text style={styles.categoryText}>{tag}</Text>
         </View>
       )}
 
-      <View style={styles.deleteIcon}>
-        {onDelete && (
-          <TouchableOpacity onPress={onDelete}>
-            <MaterialIcons name="delete" size={26} color="#BD9D1E" />
-          </TouchableOpacity>
-        )}
-      </View>
-
+      {/* POST CONTENT */}
       <Text style={styles.text}>{text}</Text>
 
+      {/* ACTIONS */}
       <View style={styles.actions}>
-        <TouchableOpacity onPress={handleLike} style={styles.likeButton}>
+        <TouchableOpacity onPress={() => onToggleLike?.(postId, liked)} style={styles.likeButton}>
           <MaterialIcons
             name={liked ? "favorite" : "favorite-border"}
             size={28}
@@ -80,6 +66,15 @@ export default function PostCard({
           <Text style={styles.likeText}>{comments}</Text>
         </View>
       </View>
+
+      {/* DELETE ICON */}
+      {onDelete && (
+        <View style={styles.deleteIcon}>
+          <TouchableOpacity onPress={onDelete}>
+            <MaterialIcons name="delete" size={26} color="#BD9D1E" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -91,6 +86,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
     marginTop: 20,
     borderRadius: 20,
+    position: "relative", // necesario para posicionar absolute children
   },
   avatar: { width: 45, height: 45, borderRadius: 20 },
   userName: { fontFamily: "PoppinsBold" },
@@ -103,12 +99,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 20,
   },
-  categoryText: {
-    fontFamily: "PoppinsBold",
-    color: "#fff",
-    fontSize: 12,
+  categoryText: { fontFamily: "PoppinsBold", color: "#fff", fontSize: 12 },
+  deleteIcon: {
+    position: "absolute",
+    bottom: 15,
+    right: 15,
   },
-  deleteIcon: { position: "absolute", right: 20, top: 20 },
   text: { marginTop: 15, fontSize: 16, fontFamily: "PoppinsRegular" },
   actions: { flexDirection: "row", marginTop: 15 },
   likeButton: { flexDirection: "row", alignItems: "center", marginRight: 20 },
