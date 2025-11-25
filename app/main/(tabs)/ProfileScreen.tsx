@@ -81,8 +81,8 @@ const loadStats = useCallback(async () => {
       .eq("id", user.id)
       .single();
 
-    console.log(data);
-    console.log(data?.avatar_url);
+    //console.log(data);
+    //console.log(data?.avatar_url);
 
     setProfile(data);
     loadStats();
