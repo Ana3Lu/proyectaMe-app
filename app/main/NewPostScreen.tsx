@@ -144,5 +144,5 @@ const styles = StyleSheet.create({
   warningBox: { backgroundColor: "#FFF2F2", padding: 16, margin: 20, borderRadius: 16, alignItems: "center" },
   warningText: { color: "#DD3282", fontFamily: "PoppinsSemiBold", fontSize: 16 },
   robbyWrapper: { marginTop: 20, width: "100%", alignItems: "center" },
-  robbyImage: { width: 160, height: 160 },
+  robbyImage: { width: 350, height: 350 },
 });
