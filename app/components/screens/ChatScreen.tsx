@@ -165,7 +165,10 @@ Pregunta del usuario: "${prompt}"
       <ScrollView
         ref={scrollRef}
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={[
+            styles.contentContainer,
+            { paddingBottom: insets.bottom + 140 } 
+            ]}
         showsVerticalScrollIndicator={false}
       >
         {chat.map((c, i) => (
@@ -253,4 +256,5 @@ const styles = StyleSheet.create({
   },
   sendWrapper: { marginLeft: 10 },
   sendButton: { width: 45, height: 45, borderRadius: 22, justifyContent: "center", alignItems: "center" },
+  contentContainer: { padding: 16, paddingBottom: 40 },
 });

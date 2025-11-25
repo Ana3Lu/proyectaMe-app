@@ -3,14 +3,16 @@ import { OptionButton } from '@/app/components/ui/OptionButton';
 import { ProgressBar } from '@/app/components/ui/ProgressBar';
 import { FALLBACK_SIMULATIONS, GENERIC_FALLBACK } from "@/constants/simulationFallbacks";
 import { SIMULATIONS } from "@/constants/simulations";
+import { AuthContext } from '@/contexts/AuthContext';
 import { useSimulation } from '@/contexts/SimulationContext';
 import { useVocational } from '@/contexts/VocationalContext';
 import { GeminiResponse } from '@/types/responses.type';
 import { SimulationQuestion } from '@/types/simulation.type';
+import { supabase } from '@/utils/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView, Platform,
@@ -35,6 +37,7 @@ export default function SimulationScreen() {
   const { saveSimulationResults } = useSimulation();
   const { markSimulationCompleted } = useVocational();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useContext(AuthContext);
 
   const simulation = SIMULATIONS.find(sim => sim.id === id);
   const topic = simulation?.topicPrompt;
@@ -173,7 +176,7 @@ export default function SimulationScreen() {
     setResults(prev => [...prev, { skill: selectedSkill, score: selectedScore }]);
   };
 
-  const goToNext = () => {
+  const goToNext = async () => {
     const nextIndex = currentIndex + 1;
 
     if (nextIndex < questions.length) {
@@ -204,6 +207,17 @@ export default function SimulationScreen() {
 
       saveSimulationResults(id!, finalPercentages);  
       markSimulationCompleted(id!);
+
+      // Registrar como simulación completada del usuario (para Profile)
+      if (user?.id) {
+        await supabase
+          .from("completed_simulations")
+          .insert({
+            user_id: user.id,
+            simulation_id: id,
+            created_at: new Date().toISOString()
+          });
+      }
 
       setChatHistory(prev => [
         ...prev,
@@ -244,7 +258,10 @@ export default function SimulationScreen() {
       </LinearGradient>
 
       <ScrollView 
-        contentContainerStyle={styles.contentContainer} 
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: insets.bottom + 140 } // <- espacio dinámico real
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
@@ -284,7 +301,7 @@ export default function SimulationScreen() {
         {!isLoading && isFinished && (
           <TouchableOpacity
             style={[styles.nextButton, { marginTop: 8, backgroundColor: '#DD3282' }]}
-            onPress={goFeedback => router.push('/main/FeedbackScreen')}
+            onPress={() => router.push('/main/FeedbackScreen')}
           >
             <Text style={styles.finalButtonText}>Finalizar</Text>
           </TouchableOpacity>
@@ -329,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topBarText: { color: 'white', fontWeight: '600', fontSize: 16 },
-  contentContainer: { padding: 16, paddingBottom: 100 },
+  contentContainer: { padding: 16, paddingBottom: 40 },
   loadingContainer: { justifyContent: 'center', alignItems: 'center', marginTop: 50 },
   nextButton: {
     marginTop: 16,
