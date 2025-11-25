@@ -181,7 +181,7 @@ export default function CommunityScreen() {
           />
           <SecondaryButton
             title="Ver retos"
-            onPress={isPremium ? () => router.push("../MyPostsScreen") : undefined}
+            onPress={isPremium ? () => router.push("../CommunityChallengesScreen") : undefined}
             disabled={!isPremium}
           />
         </View>
